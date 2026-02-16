@@ -169,7 +169,7 @@ export class SQLiteDatabase implements ILocalDatabase {
   // ==================
 
   async createEntry(input: CreateEntryInput): Promise<MemoryEntry> {
-    const id = nanoid();
+    const id = input.id || nanoid();
     const branch = input.branch || (await this.getActiveBranch(input.projectId));
 
     return this.db.transaction(() => {
@@ -451,6 +451,7 @@ export class SQLiteDatabase implements ILocalDatabase {
       projectId: row.project_id,
       name: row.name,
       parentBranch: row.parent_branch,
+      isActive: row.is_active === 1,
       createdAt: new Date(row.created_at),
     };
   }
@@ -465,6 +466,7 @@ export class SQLiteDatabase implements ILocalDatabase {
       projectId: row.project_id,
       name: row.name,
       parentBranch: row.parent_branch,
+      isActive: row.is_active === 1,
       createdAt: new Date(row.created_at),
     }));
   }

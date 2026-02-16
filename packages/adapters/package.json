@@ -25,9 +25,10 @@
   },
   "dependencies": {
     "@memocore/core": "workspace:*",
-    "@supabase/supabase-js": "^2.48.1",
+    "@supabase/supabase-js": "^2.95.3",
     "better-sqlite3": "^11.7.0",
-    "nanoid": "^5.1.6"
+    "nanoid": "^5.1.6",
+    "open": "^11.0.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",

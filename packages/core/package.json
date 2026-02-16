@@ -16,7 +16,8 @@
     "test": "vitest"
   },
   "dependencies": {
-    "nanoid": "^5.0.9"
+    "nanoid": "^5.0.9",
+    "tiktoken": "^1.0.18"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

@@ -63,6 +63,7 @@ export interface Branch {
   projectId: string;
   name: string;
   parentBranch?: string;
+  isActive: boolean;
   createdAt: Date;
 }
 
@@ -93,6 +94,7 @@ export interface SyncResult {
   pushed: number;
   pulled: number;
   conflicts: number;
+  errors: string[];
 }
 
 /**
@@ -112,6 +114,7 @@ export interface EntryQuery {
  * Input for creating a new entry
  */
 export interface CreateEntryInput {
+  id?: string; // Optional - if not provided, will be auto-generated
   projectId: string;
   type: MemoryEntryType;
   title: string;

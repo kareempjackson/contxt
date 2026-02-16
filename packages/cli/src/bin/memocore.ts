@@ -14,6 +14,11 @@ import { docCommand } from '../commands/doc.js';
 import { sessionCommand } from '../commands/session.js';
 import { searchCommand } from '../commands/search.js';
 import { exportCommand, importCommand } from '../commands/export.js';
+import { authCommand } from '../commands/auth.js';
+import { syncCommand } from '../commands/sync.js';
+import { branchCommand } from '../commands/branch.js';
+import { historyCommand } from '../commands/history.js';
+import { loadCommand } from '../commands/load.js';
 
 const program = new Command();
 
@@ -188,6 +193,108 @@ program
   .requiredOption('-f, --file <file>', 'Input file to import')
   .option('-m, --merge', 'Merge with existing entries (default: replace)')
   .action(importCommand);
+
+// Auth commands
+const auth = program
+  .command('auth')
+  .description('Manage authentication');
+
+auth
+  .command('login')
+  .description('Authenticate with GitHub or email')
+  .option('-e, --email <email>', 'Login with magic link (email)')
+  .action(authCommand.login);
+
+auth
+  .command('logout')
+  .description('Logout from MemoCore')
+  .action(authCommand.logout);
+
+auth
+  .command('status')
+  .description('Check authentication status')
+  .action(authCommand.status);
+
+// Sync commands
+program
+  .command('push')
+  .description('Push local changes to cloud')
+  .option('-f, --force', 'Force push (override conflicts)')
+  .option('-d, --dry-run', 'Show what would be pushed without actually pushing')
+  .action(syncCommand.push);
+
+program
+  .command('pull')
+  .description('Pull remote changes to local')
+  .option('-f, --force', 'Force pull (override conflicts)')
+  .option('-d, --dry-run', 'Show what would be pulled without actually pulling')
+  .action(syncCommand.pull);
+
+program
+  .command('sync')
+  .description('Full bidirectional sync (pull + push)')
+  .option('-f, --force', 'Force sync (override conflicts)')
+  .option('-d, --dry-run', 'Show what would be synced without actually syncing')
+  .action(syncCommand.sync);
+
+// Branch commands
+const branch = program
+  .command('branch')
+  .description('Manage branches');
+
+branch
+  .command('create <name>')
+  .description('Create a new branch')
+  .option('-f, --from <branch>', 'Create from specific branch')
+  .action(branchCommand.create);
+
+branch
+  .command('list')
+  .description('List all branches')
+  .action(branchCommand.list);
+
+branch
+  .command('switch <name>')
+  .description('Switch to a different branch')
+  .action(branchCommand.switch);
+
+branch
+  .command('delete <name>')
+  .description('Delete a branch')
+  .action(branchCommand.delete);
+
+branch
+  .command('merge <source>')
+  .description('Merge a branch into current branch')
+  .action(branchCommand.merge);
+
+// History commands
+const history = program
+  .command('history')
+  .description('View and restore version history');
+
+history
+  .command('show <entry-id>')
+  .description('Show version history for an entry')
+  .action(historyCommand.show);
+
+history
+  .command('restore <entry-id>')
+  .description('Restore an entry to a previous version')
+  .requiredOption('-v, --version <version>', 'Version number to restore', parseInt)
+  .action(historyCommand.restore);
+
+// Load command
+program
+  .command('load')
+  .description('Generate context payload for AI prompts')
+  .option('-t, --task <description>', 'Task-based context (smart relevance ranking)')
+  .option('-f, --files <files...>', 'File-based context (filter by file mentions)')
+  .option('-a, --all', 'All context (everything, sorted by recency)')
+  .option('--max-tokens <tokens>', 'Maximum tokens for context', parseInt)
+  .option('--type <type>', 'Filter by entry type (decision, pattern, etc.)')
+  .option('-s, --summary', 'Show context summary instead of full context')
+  .action(loadCommand);
 
 // Parse arguments
 program.parse();

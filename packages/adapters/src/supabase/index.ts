@@ -1,7 +1,6 @@
 /**
- * Supabase adapter exports
- * To be implemented in Day 5
+ * Supabase Adapter - Cloud sync and authentication
  */
 
-// Placeholder for now
-export const TODO_SUPABASE = 'Implement Supabase adapter';
+export { SupabaseDatabase } from './database.js';
+export { SupabaseAuth } from './auth.js';
