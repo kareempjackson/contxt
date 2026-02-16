@@ -1,0 +1,24 @@
+{
+  "name": "@memocore/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "memocore-mcp": "./dist/server.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@memocore/core": "workspace:*",
+    "@memocore/adapters": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "tiktoken": "^1.0.18"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
