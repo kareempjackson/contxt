@@ -1,11 +1,14 @@
 {
   "name": "@mycontxt/cli",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "type": "module",
   "bin": {
     "contxt": "./dist/contxt.js"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

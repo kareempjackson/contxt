@@ -4,15 +4,13 @@
 -- User profiles table
 CREATE TABLE user_profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT NOT NULL,
+  email TEXT,
   tier TEXT NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'pro', 'team')),
   github_username TEXT,
   avatar_url TEXT,
   metadata JSONB DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-  UNIQUE(email)
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Usage tracking table (for tier limits)
@@ -30,6 +28,7 @@ CREATE TABLE usage_tracking (
 );
 
 -- Indexes
+CREATE UNIQUE INDEX user_profiles_email_unique ON user_profiles(email) WHERE email IS NOT NULL;
 CREATE INDEX idx_user_profiles_email ON user_profiles(email);
 CREATE INDEX idx_user_profiles_tier ON user_profiles(tier);
 CREATE INDEX idx_usage_tracking_user_id ON usage_tracking(user_id);
@@ -46,16 +45,18 @@ CREATE TRIGGER update_usage_tracking_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- Function to create user profile on signup
+-- Uses COALESCE to handle GitHub users with private emails (null email)
 CREATE OR REPLACE FUNCTION create_user_profile()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO user_profiles (id, email, github_username, avatar_url)
   VALUES (
     NEW.id,
-    NEW.email,
+    COALESCE(NEW.email, NEW.raw_user_meta_data->>'email'),
     NEW.raw_user_meta_data->>'user_name',
     NEW.raw_user_meta_data->>'avatar_url'
-  );
+  )
+  ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

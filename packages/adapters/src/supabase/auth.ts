@@ -27,7 +27,7 @@ export class SupabaseAuth {
   /**
    * Login with GitHub OAuth (opens browser)
    */
-  async loginWithGitHub(): Promise<{
+  async loginWithGitHub(productionUrl = 'https://www.mycontxt.co'): Promise<{
     accessToken: string;
     user: {
       id: string;
@@ -36,80 +36,77 @@ export class SupabaseAuth {
     };
   }> {
     const callbackPort = 54321;
-    const callbackUrl = `http://localhost:${callbackPort}/callback`;
+    // Production /auth/cli page reads the hash token and POSTs it back here
+    const redirectTo = `${productionUrl}/auth/cli`;
 
     return new Promise((resolve, reject) => {
       const server = createServer(async (req, res) => {
-        if (req.url?.startsWith('/callback')) {
-          const url = new URL(req.url, `http://localhost:${callbackPort}`);
-          const code = url.searchParams.get('code');
-          const error = url.searchParams.get('error');
+        // CORS headers so the browser page can POST to us
+        res.setHeader('Access-Control-Allow-Origin', productionUrl);
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-          if (error) {
-            res.writeHead(400, { 'Content-Type': 'text/html' });
-            res.end(`<h1>Authentication Failed</h1><p>${error}</p>`);
-            server.close();
-            reject(new Error(error));
-            return;
-          }
+        if (req.method === 'OPTIONS') {
+          res.writeHead(204);
+          res.end();
+          return;
+        }
 
-          if (code) {
+        if (req.method === 'POST' && req.url === '/callback') {
+          let body = '';
+          req.on('data', (chunk) => { body += chunk; });
+          req.on('end', async () => {
             try {
-              // Exchange code for session
-              const { data, error: sessionError } =
-                await this.client.auth.exchangeCodeForSession(code);
+              const { access_token, refresh_token } = JSON.parse(body);
 
-              if (sessionError || !data.session) {
-                throw sessionError || new Error('No session returned');
+              if (!access_token) {
+                res.writeHead(400);
+                res.end(JSON.stringify({ error: 'Missing access_token' }));
+                server.close();
+                reject(new Error('No access token received'));
+                return;
               }
 
-              res.writeHead(200, { 'Content-Type': 'text/html' });
-              res.end(`
-                <html>
-                  <body style="font-family: sans-serif; text-align: center; padding: 50px;">
-                    <h1>✅ Authentication Successful!</h1>
-                    <p>You can close this window and return to your terminal.</p>
-                  </body>
-                </html>
-              `);
+              // Get user info from the token
+              const { data: { user }, error: userError } =
+                await this.client.auth.getUser(access_token);
 
+              if (userError || !user) {
+                throw userError || new Error('Could not fetch user');
+              }
+
+              res.writeHead(200);
+              res.end(JSON.stringify({ ok: true }));
               server.close();
 
               resolve({
-                accessToken: data.session.access_token,
+                accessToken: access_token,
                 user: {
-                  id: data.session.user.id,
-                  email: data.session.user.email!,
-                  githubUsername:
-                    data.session.user.user_metadata?.user_name,
+                  id: user.id,
+                  email: user.email!,
+                  githubUsername: user.user_metadata?.user_name,
                 },
               });
             } catch (err) {
-              res.writeHead(500, { 'Content-Type': 'text/html' });
-              res.end(`
-                <html>
-                  <body style="font-family: sans-serif; text-align: center; padding: 50px;">
-                    <h1>❌ Authentication Failed</h1>
-                    <p>${err instanceof Error ? err.message : 'Unknown error'}</p>
-                  </body>
-                </html>
-              `);
+              res.writeHead(500);
+              res.end(JSON.stringify({ error: String(err) }));
               server.close();
               reject(err);
             }
-          }
+          });
+          return;
         }
+
+        res.writeHead(404);
+        res.end();
       });
 
       server.listen(callbackPort, async () => {
         console.log(`Waiting for authentication...`);
 
-        // Initiate OAuth flow
         const { data, error } = await this.client.auth.signInWithOAuth({
           provider: 'github',
-          options: {
-            redirectTo: callbackUrl,
-          },
+          options: { redirectTo },
         });
 
         if (error) {
