@@ -6,7 +6,7 @@ import type { ActivityItem } from '@mycontxt/core';
 async function getActivity(): Promise<ActivityItem[]> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
+  if (!user) redirect('/auth/login');
 
   const db = new SupabaseDatabase({
     url: process.env.NEXT_PUBLIC_SUPABASE_URL!,

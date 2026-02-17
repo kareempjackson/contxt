@@ -27,7 +27,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <a href="/auth" className="h-9 px-[18px] text-[13.5px] font-semibold rounded-full bg-transparent text-text-2 hover:text-text-0 transition-colors flex items-center justify-center">
+            <a href="/auth/login" className="h-9 px-[18px] text-[13.5px] font-semibold rounded-full bg-transparent text-text-2 hover:text-text-0 transition-colors flex items-center justify-center">
               Sign in
             </a>
             <button className="h-9 px-[18px] text-[13.5px] font-semibold rounded-full bg-bg-dark text-text-inv hover:bg-[#333] transition-colors">

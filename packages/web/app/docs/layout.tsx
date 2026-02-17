@@ -97,7 +97,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               </svg>
             </button>
             <a
-              href="/auth"
+              href="/auth/login"
               className="h-9 px-5 text-[13.5px] font-semibold rounded-full bg-bg-dark text-text-inv hover:bg-[#333] transition-colors flex items-center justify-center"
             >
               Get started
