@@ -2,8 +2,8 @@
  * Load Command - Generate context payload for AI prompts
  */
 
-import { SQLiteDatabase } from '@contxt/adapters/sqlite';
-import { buildContextPayload, buildContextSummary } from '@contxt/core';
+import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
+import { buildContextPayload, buildContextSummary } from '@mycontxt/core';
 import { getDbPath } from '../utils/project.js';
 
 interface LoadOptions {

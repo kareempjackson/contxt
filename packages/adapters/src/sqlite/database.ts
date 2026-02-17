@@ -8,7 +8,7 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { nanoid } from 'nanoid';
-import type { ILocalDatabase } from '@contxt/core';
+import type { ILocalDatabase } from '@mycontxt/core';
 import type {
   MemoryEntry,
   Project,
@@ -16,7 +16,7 @@ import type {
   Branch,
   CreateEntryInput,
   EntryQuery,
-} from '@contxt/core';
+} from '@mycontxt/core';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

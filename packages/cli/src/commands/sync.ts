@@ -2,9 +2,9 @@
  * Sync Commands - Push/pull memory to/from cloud
  */
 
-import { SQLiteDatabase } from '@contxt/adapters/sqlite';
-import { SupabaseDatabase } from '@contxt/adapters/supabase';
-import { SyncEngine } from '@contxt/core';
+import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
+import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
+import { SyncEngine } from '@mycontxt/core';
 import { getDbPath } from '../utils/project.js';
 import { getAccessToken } from './auth.js';
 import { getSupabaseConfig } from '../config.js';

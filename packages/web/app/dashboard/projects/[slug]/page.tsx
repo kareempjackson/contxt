@@ -1,7 +1,7 @@
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '../../../../lib/supabase/server';
-import { SupabaseDatabase } from '@contxt/adapters/supabase';
-import type { Project } from '@contxt/core';
+import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
+import type { Project } from '@mycontxt/core';
 import { ProjectDetailClient } from './client';
 
 async function getProject(slug: string): Promise<Project> {

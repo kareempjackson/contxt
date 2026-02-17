@@ -2,7 +2,7 @@
  * Context commands
  */
 
-import type { ContextInput } from '@contxt/core';
+import type { ContextInput } from '@mycontxt/core';
 import { loadProject } from '../utils/project.js';
 import { success, error, formatEntry, info } from '../utils/output.js';
 

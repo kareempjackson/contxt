@@ -2,7 +2,7 @@
  * Pattern commands
  */
 
-import type { PatternInput } from '@contxt/core';
+import type { PatternInput } from '@mycontxt/core';
 import { loadProject } from '../utils/project.js';
 import { success, error, formatEntry, formatEntryList, section } from '../utils/output.js';
 

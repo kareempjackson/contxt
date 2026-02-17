@@ -6,7 +6,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import { getProjectDb } from '../utils/project.js';
-import type { MemoryEntry } from '@contxt/core';
+import type { MemoryEntry } from '@mycontxt/core';
 
 interface ReviewOptions {
   source?: string;

@@ -3,7 +3,7 @@
  */
 
 import chalk from 'chalk';
-import type { MemoryEntry } from '@contxt/core';
+import type { MemoryEntry } from '@mycontxt/core';
 import { formatDate } from './project.js';
 
 /**

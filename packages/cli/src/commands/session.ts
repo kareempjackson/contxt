@@ -2,7 +2,7 @@
  * Session commands
  */
 
-import type { SessionInput } from '@contxt/core';
+import type { SessionInput } from '@mycontxt/core';
 import { loadProject } from '../utils/project.js';
 import { success, error, info, formatEntry, formatEntryList, section } from '../utils/output.js';
 

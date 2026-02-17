@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
-import { SupabaseDatabase } from '@contxt/adapters/supabase';
+import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
 import { SearchClient } from './client';
 
 async function getSearchContext() {

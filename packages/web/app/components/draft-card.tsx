@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Check, Edit2, X } from 'lucide-react';
-import type { MemoryEntry } from '@contxt/core';
+import type { MemoryEntry } from '@mycontxt/core';
 import { useConfirmDraftMutation, useDiscardDraftMutation, useUpdateEntryMutation } from '../../lib/store/api';
 
 const TYPE_COLORS: Record<string, string> = {

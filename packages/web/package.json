@@ -9,8 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@contxt/adapters": "workspace:*",
-    "@contxt/core": "workspace:*",
+    "@mycontxt/adapters": "workspace:*",
+    "@mycontxt/core": "workspace:*",
     "@reduxjs/toolkit": "^2.5.0",
     "@supabase/ssr": "^0.5.0",
     "@supabase/supabase-js": "^2.47.0",

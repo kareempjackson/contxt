@@ -3,9 +3,9 @@
  * This is the killer feature of MemoCore
  */
 
-import { SQLiteDatabase } from '@contxt/adapters/sqlite';
-import { rankEntries, fitToBudget, buildContext } from '@contxt/core';
-import type { SuggestOptions } from '@contxt/core';
+import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
+import { rankEntries, fitToBudget, buildContext } from '@mycontxt/core';
+import type { SuggestOptions } from '@mycontxt/core';
 import { getDbPath } from '../utils/project.js';
 
 interface SuggestContextArgs {

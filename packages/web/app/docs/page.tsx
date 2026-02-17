@@ -73,7 +73,7 @@ export default function DocsIntroduction() {
             <div className="flex-1">
               <h3 className="font-semibold text-text-0 text-[17px] mb-2">Install Contxt</h3>
               <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto">
-                <code className="font-mono text-[13.5px] text-green">npm install -g @contxt/cli</code>
+                <code className="font-mono text-[13.5px] text-green">npm install -g @mycontxt/cli</code>
               </div>
             </div>
           </div>

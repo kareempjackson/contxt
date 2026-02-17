@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
-import { SupabaseDatabase } from '@contxt/adapters/supabase';
-import type { ActivityItem } from '@contxt/core';
+import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
+import type { ActivityItem } from '@mycontxt/core';
 
 async function getActivity(): Promise<ActivityItem[]> {
   const supabase = await createClient();

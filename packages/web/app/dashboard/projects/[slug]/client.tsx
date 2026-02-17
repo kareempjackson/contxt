@@ -10,7 +10,7 @@ import {
 } from '../../../../lib/store/api';
 import { EntryPanel } from '../../../components/entry-panel';
 import { usePanelUrl } from '../../../../lib/hooks/use-panel-url';
-import type { Project, MemoryEntryType } from '@contxt/core';
+import type { Project, MemoryEntryType } from '@mycontxt/core';
 
 const TYPE_BADGES: Record<string, string> = {
   decision: 'bg-blue/10 text-blue',

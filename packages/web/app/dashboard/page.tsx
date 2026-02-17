@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '../../lib/supabase/server';
-import { SupabaseDatabase } from '@contxt/adapters/supabase';
-import type { Project } from '@contxt/core';
+import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
+import type { Project } from '@mycontxt/core';
 
 async function getProjects(): Promise<Project[]> {
   const supabase = await createClient();

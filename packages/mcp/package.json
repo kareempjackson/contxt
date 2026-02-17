@@ -1,5 +1,5 @@
 {
-  "name": "@contxt/mcp",
+  "name": "@mycontxt/mcp",
   "version": "0.1.0",
   "type": "module",
   "bin": {
@@ -11,8 +11,8 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@contxt/core": "workspace:*",
-    "@contxt/adapters": "workspace:*",
+    "@mycontxt/core": "workspace:*",
+    "@mycontxt/adapters": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "tiktoken": "^1.0.18"
   },

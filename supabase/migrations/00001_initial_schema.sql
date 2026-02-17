@@ -1,12 +1,12 @@
 -- MemoCore Initial Schema
 -- Core tables for projects and memory entries
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable pgvector extension (required for vector column in memory_entries)
+CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Projects table
 CREATE TABLE projects (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   path TEXT NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE projects (
 
 -- Branches table
 CREATE TABLE branches (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   parent_branch TEXT,
@@ -29,15 +29,12 @@ CREATE TABLE branches (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   -- Ensure unique branch names per project
-  UNIQUE(project_id, name),
-
-  -- Only one active branch per project
-  EXCLUDE USING gist (project_id WITH =) WHERE (is_active = true)
+  UNIQUE(project_id, name)
 );
 
 -- Memory entries table
 CREATE TABLE memory_entries (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   type TEXT NOT NULL CHECK (type IN ('decision', 'pattern', 'context', 'document', 'session')),
   title TEXT NOT NULL,
@@ -54,7 +51,7 @@ CREATE TABLE memory_entries (
 
 -- Memory versions table (for time travel)
 CREATE TABLE memory_versions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   entry_id UUID NOT NULL REFERENCES memory_entries(id) ON DELETE CASCADE,
   version INTEGER NOT NULL,
   title TEXT NOT NULL,
@@ -68,7 +65,7 @@ CREATE TABLE memory_versions (
 
 -- Sync metadata table (track sync state)
 CREATE TABLE sync_metadata (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   last_push_at TIMESTAMPTZ,
   last_pull_at TIMESTAMPTZ,
@@ -86,6 +83,8 @@ CREATE INDEX idx_projects_path ON projects(path);
 
 CREATE INDEX idx_branches_project_id ON branches(project_id);
 CREATE INDEX idx_branches_active ON branches(is_active) WHERE is_active = true;
+-- Only one active branch per project (replaces EXCLUDE USING gist)
+CREATE UNIQUE INDEX idx_one_active_branch ON branches(project_id) WHERE is_active = true;
 
 CREATE INDEX idx_entries_project_id ON memory_entries(project_id);
 CREATE INDEX idx_entries_branch ON memory_entries(project_id, branch);

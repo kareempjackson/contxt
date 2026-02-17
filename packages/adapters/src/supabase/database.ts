@@ -5,7 +5,7 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
-import type { IRemoteDatabase } from '@contxt/core';
+import type { IRemoteDatabase } from '@mycontxt/core';
 import type {
   MemoryEntry,
   MemoryEntryStatus,
@@ -15,7 +15,7 @@ import type {
   CreateEntryInput,
   ActivityItem,
   UsageStats,
-} from '@contxt/core';
+} from '@mycontxt/core';
 
 interface SupabaseConfig {
   url: string;

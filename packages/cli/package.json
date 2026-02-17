@@ -1,18 +1,19 @@
 {
-  "name": "@contxt/cli",
+  "name": "@mycontxt/cli",
   "version": "0.1.0",
   "type": "module",
   "bin": {
     "contxt": "./dist/contxt.js"
   },
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest"
   },
   "dependencies": {
-    "@contxt/core": "workspace:*",
-    "@contxt/adapters": "workspace:*",
+    "@mycontxt/core": "workspace:*",
+    "@mycontxt/adapters": "workspace:*",
     "commander": "^12.1.0",
     "chalk": "^5.4.1",
     "ora": "^8.1.1",

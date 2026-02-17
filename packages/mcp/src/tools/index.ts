@@ -2,9 +2,9 @@
  * MCP Tools - All tool implementations
  */
 
-import { SQLiteDatabase } from '@contxt/adapters/sqlite';
-import { MemoryEngine } from '@contxt/core';
-import type { DecisionInput, PatternInput, ContextInput } from '@contxt/core';
+import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
+import { MemoryEngine } from '@mycontxt/core';
+import type { DecisionInput, PatternInput, ContextInput } from '@mycontxt/core';
 import { getDbPath } from '../utils/project.js';
 import { suggestContext } from './suggest-context.js';
 import {

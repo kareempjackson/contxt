@@ -4,7 +4,7 @@
 
 import { mkdirSync, existsSync } from 'fs';
 import { basename } from 'path';
-import { SQLiteDatabase } from '@contxt/adapters/sqlite';
+import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { getContxtDir, getDbPath, isContxtProject } from '../utils/project.js';
 import { success, error, info } from '../utils/output.js';
 

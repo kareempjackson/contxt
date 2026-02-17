@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Project } from '@contxt/core';
+import type { Project } from '@mycontxt/core';
 
 const PROJECT_COLORS = [
   '#0A84FF', '#BF5AF2', '#64D2FF', '#FF9F0A',

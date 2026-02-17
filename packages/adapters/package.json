@@ -1,5 +1,5 @@
 {
-  "name": "@contxt/adapters",
+  "name": "@mycontxt/adapters",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,13 +22,14 @@
       "import": "./dist/supabase-auth/index.js"
     }
   },
+  "files": ["dist", "README.md"],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest"
   },
   "dependencies": {
-    "@contxt/core": "workspace:*",
+    "@mycontxt/core": "workspace:*",
     "@supabase/supabase-js": "^2.95.3",
     "better-sqlite3": "^11.7.0",
     "nanoid": "^5.1.6",

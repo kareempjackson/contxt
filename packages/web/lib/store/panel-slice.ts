@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { MemoryEntryType } from '@contxt/core';
+import type { MemoryEntryType } from '@mycontxt/core';
 
 type PanelMode = 'view' | 'edit' | 'create';
 

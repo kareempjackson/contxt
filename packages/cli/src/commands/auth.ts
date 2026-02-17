@@ -2,7 +2,7 @@
  * Auth Commands - Handle authentication with Supabase
  */
 
-import { SupabaseAuth } from '@contxt/adapters/supabase-auth';
+import { SupabaseAuth } from '@mycontxt/adapters/supabase-auth';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';

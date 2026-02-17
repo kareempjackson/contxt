@@ -7,7 +7,7 @@ import { openEntry } from '../../../lib/store/panel-slice';
 import { useSearchEntriesQuery, useSearchAllQuery } from '../../../lib/store/api';
 import { EntryPanel } from '../../components/entry-panel';
 import { usePanelUrl } from '../../../lib/hooks/use-panel-url';
-import type { Project } from '@contxt/core';
+import type { Project } from '@mycontxt/core';
 
 const TYPE_BADGES: Record<string, string> = {
   decision: 'bg-blue/10 text-blue',

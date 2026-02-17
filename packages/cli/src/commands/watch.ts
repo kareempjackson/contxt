@@ -7,7 +7,7 @@ import { join, relative } from 'path';
 import { spawn } from 'child_process';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
-import { parseFile, scanCommentToEntry } from '@contxt/core';
+import { parseFile, scanCommentToEntry } from '@mycontxt/core';
 import { getProjectDb } from '../utils/project.js';
 
 const PID_FILE = '.contxt/.watch.pid';
@@ -188,7 +188,7 @@ async function runWatcher() {
   rulesWatcher.on('change', async () => {
     log('rules', 'rules.md changed — syncing...');
     try {
-      const { parseRulesFile } = await import('@contxt/core');
+      const { parseRulesFile } = await import('@mycontxt/core');
       const content = readFileSync(rulesPath, 'utf-8');
       const parsed = parseRulesFile(content);
       let synced = 0;

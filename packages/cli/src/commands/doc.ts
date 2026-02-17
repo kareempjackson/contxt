@@ -3,7 +3,7 @@
  */
 
 import { readFileSync } from 'fs';
-import type { DocumentInput } from '@contxt/core';
+import type { DocumentInput } from '@mycontxt/core';
 import { loadProject } from '../utils/project.js';
 import { success, error, formatEntry, formatEntryList, section } from '../utils/output.js';
 

@@ -4,8 +4,8 @@
 
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { SQLiteDatabase } from '@contxt/adapters/sqlite';
-import { MemoryEngine } from '@contxt/core';
+import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
+import { MemoryEngine } from '@mycontxt/core';
 
 export interface ProjectContext {
   db: SQLiteDatabase;

@@ -13,7 +13,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   splitting: false,
-  external: ['@contxt/core'],
+  external: ['@mycontxt/core'],
   onSuccess: async () => {
     // Copy schema.sql to dist
     const distDir = join(__dirname, 'dist', 'sqlite');

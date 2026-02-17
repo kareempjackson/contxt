@@ -6,9 +6,9 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { parseRulesFile, generateRulesFile } from '@contxt/core';
+import { parseRulesFile, generateRulesFile } from '@mycontxt/core';
 import { getProjectDb } from '../utils/project.js';
-import type { MemoryEntry } from '@contxt/core';
+import type { MemoryEntry } from '@mycontxt/core';
 
 interface RulesOptions {
   force?: boolean;

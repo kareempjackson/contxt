@@ -6,7 +6,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join, relative } from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { parseFile, scanCommentToEntry, type ScanComment } from '@contxt/core';
+import { parseFile, scanCommentToEntry, type ScanComment } from '@mycontxt/core';
 import { getProjectDb } from '../utils/project.js';
 import { glob } from 'glob';
 

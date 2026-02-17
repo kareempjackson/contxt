@@ -34,11 +34,11 @@ export default function DocsInstallation() {
           Install
         </h2>
         <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-4">
-          <code className="font-mono text-[13.5px] text-green">npm install -g @contxt/cli</code>
+          <code className="font-mono text-[13.5px] text-green">npm install -g @mycontxt/cli</code>
         </div>
         <p className="text-[17px] text-text-1 leading-[1.8] mb-4">Or with pnpm:</p>
         <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-6">
-          <code className="font-mono text-[13.5px] text-green">pnpm add -g @contxt/cli</code>
+          <code className="font-mono text-[13.5px] text-green">pnpm add -g @mycontxt/cli</code>
         </div>
       </FadeUp>
 
@@ -91,7 +91,7 @@ export default function DocsInstallation() {
           Updating
         </h2>
         <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-6">
-          <code className="font-mono text-[13.5px] text-white/90">npm update -g @contxt/cli</code>
+          <code className="font-mono text-[13.5px] text-white/90">npm update -g @mycontxt/cli</code>
         </div>
       </FadeUp>
 
@@ -100,7 +100,7 @@ export default function DocsInstallation() {
           Uninstall
         </h2>
         <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-4">
-          <code className="font-mono text-[13.5px] text-white/90">npm uninstall -g @contxt/cli</code>
+          <code className="font-mono text-[13.5px] text-white/90">npm uninstall -g @mycontxt/cli</code>
         </div>
         <p className="text-[17px] text-text-1 leading-[1.8] mb-12">
           This removes the CLI but preserves any <code className="font-mono text-[15px] bg-bg-dark/5 px-2 py-0.5 rounded">.contxt/</code> directories in your projects.

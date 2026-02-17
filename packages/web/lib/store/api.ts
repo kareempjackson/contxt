@@ -1,5 +1,5 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
-import { SupabaseDatabase } from '@contxt/adapters/supabase';
+import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
 import type {
   Project,
   MemoryEntry,
@@ -8,7 +8,7 @@ import type {
   ActivityItem,
   UsageStats,
   EntryQuery,
-} from '@contxt/core';
+} from '@mycontxt/core';
 
 function getDb() {
   return new SupabaseDatabase({

@@ -17,7 +17,7 @@ CREATE TABLE user_profiles (
 
 -- Usage tracking table (for tier limits)
 CREATE TABLE usage_tracking (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
   metric TEXT NOT NULL, -- 'entries', 'projects', 'embeddings', etc.
   count INTEGER NOT NULL DEFAULT 0,

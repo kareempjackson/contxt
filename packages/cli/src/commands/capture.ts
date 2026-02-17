@@ -7,7 +7,7 @@ import { join, basename } from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { getProjectDb } from '../utils/project.js';
-import type { MemoryEntryType, CreateEntryInput } from '@contxt/core';
+import type { MemoryEntryType, CreateEntryInput } from '@mycontxt/core';
 
 interface CaptureOptions {
   source?: 'readme' | 'cursor' | 'claude' | 'adr' | 'commits' | 'package' | 'all';

@@ -6,7 +6,7 @@
  * All entries are saved as drafts for human review.
  */
 
-import { SQLiteDatabase } from '@contxt/adapters/sqlite';
+import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { getDbPath } from '../utils/project.js';
 
 interface AutoCaptureDecisionArgs {

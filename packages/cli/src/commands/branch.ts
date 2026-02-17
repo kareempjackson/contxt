@@ -2,7 +2,7 @@
  * Branch Commands - Git-like branching for memory
  */
 
-import { SQLiteDatabase } from '@contxt/adapters/sqlite';
+import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { getDbPath } from '../utils/project.js';
 
 export const branchCommand = {
