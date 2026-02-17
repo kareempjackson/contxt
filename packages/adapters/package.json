@@ -16,6 +16,10 @@
     "./supabase": {
       "types": "./dist/supabase/index.d.ts",
       "import": "./dist/supabase/index.js"
+    },
+    "./supabase-auth": {
+      "types": "./dist/supabase-auth/index.d.ts",
+      "import": "./dist/supabase-auth/index.js"
     }
   },
   "scripts": {
@@ -32,6 +36,7 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^20",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

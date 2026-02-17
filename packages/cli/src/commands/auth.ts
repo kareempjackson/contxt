@@ -2,10 +2,11 @@
  * Auth Commands - Handle authentication with Supabase
  */
 
-import { SupabaseAuth } from '@contxt/adapters/supabase';
+import { SupabaseAuth } from '@contxt/adapters/supabase-auth';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
+import { getSupabaseConfig } from '../config.js';
 
 const CONFIG_DIR = join(homedir(), '.contxt');
 const AUTH_FILE = join(CONFIG_DIR, 'auth.json');
@@ -16,22 +17,6 @@ interface AuthData {
   email: string;
   githubUsername?: string;
   expiresAt?: string;
-}
-
-/**
- * Get Supabase config from environment or defaults
- */
-function getSupabaseConfig() {
-  const url = process.env.CONTXT_SUPABASE_URL;
-  const anonKey = process.env.CONTXT_SUPABASE_ANON_KEY;
-
-  if (!url || !anonKey) {
-    throw new Error(
-      'Supabase configuration missing. Set CONTXT_SUPABASE_URL and CONTXT_SUPABASE_ANON_KEY environment variables.'
-    );
-  }
-
-  return { url, anonKey };
 }
 
 /**

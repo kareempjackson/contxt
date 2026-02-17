@@ -7,22 +7,7 @@ import { SupabaseDatabase } from '@contxt/adapters/supabase';
 import { SyncEngine } from '@contxt/core';
 import { getDbPath } from '../utils/project.js';
 import { getAccessToken } from './auth.js';
-
-/**
- * Get Supabase config from environment
- */
-function getSupabaseConfig() {
-  const url = process.env.CONTXT_SUPABASE_URL;
-  const anonKey = process.env.CONTXT_SUPABASE_ANON_KEY;
-
-  if (!url || !anonKey) {
-    throw new Error(
-      'Supabase configuration missing. Set CONTXT_SUPABASE_URL and CONTXT_SUPABASE_ANON_KEY environment variables.'
-    );
-  }
-
-  return { url, anonKey };
-}
+import { getSupabaseConfig } from '../config.js';
 
 export const syncCommand = {
   /**

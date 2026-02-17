@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/sqlite/index.ts', 'src/supabase/index.ts'],
+  entry: ['src/index.ts', 'src/sqlite/index.ts', 'src/supabase/index.ts', 'src/supabase-auth/index.ts'],
   format: ['esm'],
   dts: false,
   sourcemap: true,

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Instrument_Serif, DM_Sans, JetBrains_Mono } from 'next/font/google';
+import { StoreProvider } from '../lib/store/store-provider';
 import './globals.css';
 
 const instrumentSerif = Instrument_Serif({
@@ -47,7 +48,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable} ${jetBrainsMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        <StoreProvider>{children}</StoreProvider>
+      </body>
     </html>
   );
 }

@@ -203,6 +203,30 @@ export interface SuggestOptions {
 }
 
 /**
+ * Activity item for the dashboard activity feed.
+ * Derived from memory_entries changes — no separate table needed.
+ */
+export interface ActivityItem {
+  id: string;
+  projectId: string;
+  projectName: string;
+  entryId?: string;
+  type: 'push' | 'session' | 'branch' | 'draft' | 'edit' | 'archive';
+  description: string;
+  actor: 'user' | 'auto';
+  createdAt: Date;
+}
+
+/**
+ * Usage statistics for the sidebar usage meters.
+ */
+export interface UsageStats {
+  entries: { used: number; limit: number };
+  projects: { used: number; limit: number | null };
+  searches: { used: number; limit: number };
+}
+
+/**
  * Validation error
  */
 export class ValidationError extends Error {
