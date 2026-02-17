@@ -1,5 +1,5 @@
 {
-  "name": "@memocore/core",
+  "name": "@contxt/core",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -20,6 +20,7 @@
     "tiktoken": "^1.0.18"
   },
   "devDependencies": {
+    "@types/node": "^22.10.5",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

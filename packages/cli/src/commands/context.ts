@@ -2,7 +2,7 @@
  * Context commands
  */
 
-import type { ContextInput } from '@memocore/core';
+import type { ContextInput } from '@contxt/core';
 import { loadProject } from '../utils/project.js';
 import { success, error, formatEntry, info } from '../utils/output.js';
 
@@ -42,7 +42,7 @@ async function show(): Promise<void> {
     const context = await engine.getContext(projectId);
 
     if (!context) {
-      info('No context set. Use "memocore context set" to set context.');
+      info('No context set. Use "contxt context set" to set context.');
       await db.close();
       return;
     }

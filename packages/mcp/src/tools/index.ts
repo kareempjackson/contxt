@@ -2,14 +2,24 @@
  * MCP Tools - All tool implementations
  */
 
-import { SQLiteDatabase } from '@memocore/adapters/sqlite';
-import { MemoryEngine } from '@memocore/core';
-import type { DecisionInput, PatternInput, ContextInput } from '@memocore/core';
+import { SQLiteDatabase } from '@contxt/adapters/sqlite';
+import { MemoryEngine } from '@contxt/core';
+import type { DecisionInput, PatternInput, ContextInput } from '@contxt/core';
 import { getDbPath } from '../utils/project.js';
 import { suggestContext } from './suggest-context.js';
+import {
+  autoCaptureDecision,
+  autoCapturePattern,
+  updateSession,
+  getDrafts,
+  confirmDraft,
+} from './auto-capture.js';
 
 // Export suggest-context
 export { suggestContext };
+
+// Export auto-capture tools
+export { autoCaptureDecision, autoCapturePattern, updateSession, getDrafts, confirmDraft };
 
 /**
  * Get project context - Overview of project

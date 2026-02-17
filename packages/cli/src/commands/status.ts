@@ -72,7 +72,7 @@ export async function statusCommand(): Promise<void> {
 
     if (unsynced.length > 0) {
       console.log(chalk.yellow(`⚠ ${unsynced.length} unsynced entries`));
-      console.log(chalk.dim('  Run "memocore push" to sync'));
+      console.log(chalk.dim('  Run "contxt push" to sync'));
       console.log();
     }
 

@@ -2,9 +2,9 @@
  * Sync Commands - Push/pull memory to/from cloud
  */
 
-import { SQLiteDatabase } from '@memocore/adapters/sqlite';
-import { SupabaseDatabase } from '@memocore/adapters/supabase';
-import { SyncEngine } from '@memocore/core';
+import { SQLiteDatabase } from '@contxt/adapters/sqlite';
+import { SupabaseDatabase } from '@contxt/adapters/supabase';
+import { SyncEngine } from '@contxt/core';
 import { getDbPath } from '../utils/project.js';
 import { getAccessToken } from './auth.js';
 
@@ -12,12 +12,12 @@ import { getAccessToken } from './auth.js';
  * Get Supabase config from environment
  */
 function getSupabaseConfig() {
-  const url = process.env.MEMOCORE_SUPABASE_URL;
-  const anonKey = process.env.MEMOCORE_SUPABASE_ANON_KEY;
+  const url = process.env.CONTXT_SUPABASE_URL;
+  const anonKey = process.env.CONTXT_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
     throw new Error(
-      'Supabase configuration missing. Set MEMOCORE_SUPABASE_URL and MEMOCORE_SUPABASE_ANON_KEY environment variables.'
+      'Supabase configuration missing. Set CONTXT_SUPABASE_URL and CONTXT_SUPABASE_ANON_KEY environment variables.'
     );
   }
 
@@ -33,7 +33,7 @@ export const syncCommand = {
       // Check authentication
       const accessToken = getAccessToken();
       if (!accessToken) {
-        console.error('❌ Not authenticated. Run `memocore auth login` first.');
+        console.error('❌ Not authenticated. Run `contxt auth login` first.');
         process.exit(1);
       }
 
@@ -48,7 +48,7 @@ export const syncCommand = {
         const project = await localDb.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No MemoCore project found. Run `memocore init` first.');
+          console.error('❌ No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -110,7 +110,7 @@ export const syncCommand = {
       // Check authentication
       const accessToken = getAccessToken();
       if (!accessToken) {
-        console.error('❌ Not authenticated. Run `memocore auth login` first.');
+        console.error('❌ Not authenticated. Run `contxt auth login` first.');
         process.exit(1);
       }
 
@@ -125,7 +125,7 @@ export const syncCommand = {
         const project = await localDb.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No MemoCore project found. Run `memocore init` first.');
+          console.error('❌ No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -187,7 +187,7 @@ export const syncCommand = {
       // Check authentication
       const accessToken = getAccessToken();
       if (!accessToken) {
-        console.error('❌ Not authenticated. Run `memocore auth login` first.');
+        console.error('❌ Not authenticated. Run `contxt auth login` first.');
         process.exit(1);
       }
 
@@ -202,7 +202,7 @@ export const syncCommand = {
         const project = await localDb.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No MemoCore project found. Run `memocore init` first.');
+          console.error('❌ No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 

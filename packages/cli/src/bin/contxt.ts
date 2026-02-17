@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * MemoCore CLI Entry Point
+ * Contxt CLI Entry Point
  */
 
 import { Command } from 'commander';
@@ -19,18 +19,24 @@ import { syncCommand } from '../commands/sync.js';
 import { branchCommand } from '../commands/branch.js';
 import { historyCommand } from '../commands/history.js';
 import { loadCommand } from '../commands/load.js';
+import { scanCommand } from '../commands/scan.js';
+import { reviewCommand } from '../commands/review.js';
+import { rulesCommand } from '../commands/rules.js';
+import { captureCommand } from '../commands/capture.js';
+import { hookCommand } from '../commands/hook.js';
+import { watchCommand } from '../commands/watch.js';
 
 const program = new Command();
 
 program
-  .name('memocore')
+  .name('contxt')
   .description('GitHub for AI Context - Persistent memory for AI coding agents')
   .version('0.1.0');
 
 // Project commands
 program
   .command('init')
-  .description('Initialize a MemoCore project in the current directory')
+  .description('Initialize a Contxt project in the current directory')
   .option('-n, --name <name>', 'Project name')
   .action(initCommand);
 
@@ -207,7 +213,7 @@ auth
 
 auth
   .command('logout')
-  .description('Logout from MemoCore')
+  .description('Logout from Contxt')
   .action(authCommand.logout);
 
 auth
@@ -295,6 +301,103 @@ program
   .option('--type <type>', 'Filter by entry type (decision, pattern, etc.)')
   .option('-s, --summary', 'Show context summary instead of full context')
   .action(loadCommand);
+
+// Scan command
+program
+  .command('scan')
+  .description('Scan codebase for tagged comments (@decision, @pattern, @context)')
+  .option('--path <path>', 'Specific directory to scan')
+  .option('--dry-run', 'Show what would be captured without saving')
+  .option('--auto-confirm', 'Skip draft queue, save directly as active')
+  .action(scanCommand);
+
+// Review command
+program
+  .command('review')
+  .description('Review and confirm draft entries')
+  .option('--source <source>', 'Filter by source (scan, hooks, mcp, import)')
+  .option('--confirm-all', 'Confirm all pending drafts')
+  .option('--discard-all', 'Discard all pending drafts')
+  .option('--count', 'Show draft count only')
+  .action(reviewCommand);
+
+// Rules commands
+const rules = program
+  .command('rules')
+  .description('Manage .contxt/rules.md file');
+
+rules
+  .command('sync')
+  .description('Sync rules.md into memory store')
+  .option('--dry-run', 'Show what would be synced without saving')
+  .option('-f, --force', 'Force sync even if conflicts exist')
+  .action(rulesCommand.sync);
+
+rules
+  .command('generate')
+  .description('Generate rules.md from memory store')
+  .option('--dry-run', 'Show what would be generated without writing')
+  .option('-f, --force', 'Overwrite existing rules.md')
+  .action(rulesCommand.generate);
+
+rules
+  .command('diff')
+  .description('Show differences between rules.md and memory')
+  .action(rulesCommand.diff);
+
+// Capture command
+program
+  .command('capture')
+  .description('Extract context from existing project files')
+  .option('--source <source>', 'Source to capture from (readme, cursor, claude, adr, commits, package, all)')
+  .option('--dry-run', 'Show what would be captured without saving')
+  .option('--auto-confirm', 'Skip draft queue, save directly as active')
+  .option('--limit <limit>', 'Limit number of commits to scan (default: 50)', parseInt)
+  .action(captureCommand);
+
+// Hook commands
+const hook = program
+  .command('hook')
+  .description('Manage git hooks for automatic context capture');
+
+hook
+  .command('install')
+  .description('Install git hooks')
+  .option('--hooks <hooks>', 'Comma-separated hooks to install (post-commit, pre-push, post-checkout, prepare-commit-msg)')
+  .action(hookCommand.install);
+
+hook
+  .command('uninstall')
+  .description('Uninstall git hooks')
+  .option('--hooks <hooks>', 'Comma-separated hooks to remove')
+  .action(hookCommand.uninstall);
+
+hook
+  .command('status')
+  .description('Show installed hook status')
+  .action(hookCommand.status);
+
+hook
+  .command('run <hook-name>')
+  .description('Run a specific hook (called internally by git)')
+  .action(hookCommand.run);
+
+// Watch commands
+program
+  .command('watch')
+  .description('Start background file watcher for passive context capture')
+  .option('--daemon', 'Run as background process')
+  .action(watchCommand.start);
+
+program
+  .command('watch:stop')
+  .description('Stop the background watch daemon')
+  .action(watchCommand.stop);
+
+program
+  .command('watch:status')
+  .description('Show watch daemon status')
+  .action(watchCommand.status);
 
 // Parse arguments
 program.parse();

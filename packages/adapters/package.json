@@ -1,5 +1,5 @@
 {
-  "name": "@memocore/adapters",
+  "name": "@contxt/adapters",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -24,7 +24,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@memocore/core": "workspace:*",
+    "@contxt/core": "workspace:*",
     "@supabase/supabase-js": "^2.95.3",
     "better-sqlite3": "^11.7.0",
     "nanoid": "^5.1.6",

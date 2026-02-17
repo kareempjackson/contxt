@@ -4,13 +4,13 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import type { IRemoteDatabase } from '@memocore/core';
+import type { IRemoteDatabase } from '@contxt/core';
 import type {
   MemoryEntry,
   Project,
   Branch,
   EntryQuery,
-} from '@memocore/core';
+} from '@contxt/core';
 
 interface SupabaseConfig {
   url: string;
@@ -43,7 +43,7 @@ export class SupabaseDatabase implements IRemoteDatabase {
     } = await this.client.auth.getSession();
 
     if (!session) {
-      throw new Error('Not authenticated. Run `memocore auth login` first.');
+      throw new Error('Not authenticated. Run `contxt auth login` first.');
     }
 
     this.userId = session.user.id;

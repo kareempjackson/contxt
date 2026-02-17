@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS memory_entries (
   embedding TEXT, -- JSON array of floats
   branch TEXT NOT NULL DEFAULT 'main',
   version INTEGER NOT NULL DEFAULT 1,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'draft', 'archived', 'stale')),
   is_synced INTEGER NOT NULL DEFAULT 0, -- 0 = false, 1 = true
   is_archived INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -58,6 +59,7 @@ CREATE TABLE IF NOT EXISTS memory_entries (
 CREATE INDEX IF NOT EXISTS idx_entries_project ON memory_entries(project_id);
 CREATE INDEX IF NOT EXISTS idx_entries_project_branch ON memory_entries(project_id, branch);
 CREATE INDEX IF NOT EXISTS idx_entries_type ON memory_entries(type);
+CREATE INDEX IF NOT EXISTS idx_entries_status ON memory_entries(status);
 CREATE INDEX IF NOT EXISTS idx_entries_synced ON memory_entries(is_synced);
 CREATE INDEX IF NOT EXISTS idx_entries_archived ON memory_entries(is_archived);
 

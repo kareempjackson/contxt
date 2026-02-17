@@ -8,6 +8,11 @@
 export type MemoryEntryType = 'decision' | 'pattern' | 'context' | 'document' | 'session';
 
 /**
+ * Memory entry status
+ */
+export type MemoryEntryStatus = 'active' | 'draft' | 'archived' | 'stale';
+
+/**
  * User tier levels
  */
 export type UserTier = 'free' | 'pro';
@@ -25,6 +30,7 @@ export interface MemoryEntry {
   embedding?: number[];
   branch: string;
   version: number;
+  status: MemoryEntryStatus;
   isSynced: boolean;
   isArchived: boolean;
   createdAt: Date;
@@ -121,6 +127,7 @@ export interface CreateEntryInput {
   content: string;
   metadata?: Record<string, any>;
   branch?: string;
+  status?: MemoryEntryStatus; // Optional - defaults to 'active'
 }
 
 /**

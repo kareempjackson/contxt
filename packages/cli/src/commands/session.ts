@@ -2,7 +2,7 @@
  * Session commands
  */
 
-import type { SessionInput } from '@memocore/core';
+import type { SessionInput } from '@contxt/core';
 import { loadProject } from '../utils/project.js';
 import { success, error, info, formatEntry, formatEntryList, section } from '../utils/output.js';
 
@@ -32,7 +32,7 @@ async function start(options: StartOptions): Promise<void> {
 
     success(`Started session: ${session.title}`);
     console.log(`ID: ${session.id}`);
-    info('Run "memocore session end" when done');
+    info('Run "contxt session end" when done');
 
     await db.close();
   } catch (err) {

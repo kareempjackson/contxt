@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/bin/memocore.ts'],
+  entry: ['src/bin/contxt.ts'],
   format: ['esm'],
   dts: false,
   sourcemap: true,

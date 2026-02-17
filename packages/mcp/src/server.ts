@@ -17,7 +17,7 @@ import * as tools from './tools/index.js';
 // Create MCP server
 const server = new Server(
   {
-    name: 'memocore',
+    name: 'contxt',
     version: '0.1.0',
   },
   {
@@ -208,6 +208,76 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['title', 'content'],
         },
       },
+      // ── Auto-capture tools (called by AI silently during conversation) ──
+      {
+        name: 'contxt_auto_capture_decision',
+        description:
+          'Silently capture an architectural decision made during the conversation. Call this when the developer chooses one technology/approach over another. Saves as a draft for later review.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            decision: { type: 'string', description: 'The decision title' },
+            rationale: { type: 'string', description: 'Why this decision was made' },
+            category: { type: 'string', description: 'Category (infrastructure, frontend, backend, etc.)' },
+            alternatives: { type: 'string', description: 'Alternatives considered' },
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+          required: ['decision', 'rationale'],
+        },
+      },
+      {
+        name: 'contxt_auto_capture_pattern',
+        description:
+          'Silently capture a reusable code pattern or convention. Call this when the developer establishes a pattern that should be followed consistently. Saves as a draft.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            pattern: { type: 'string', description: 'Pattern name' },
+            description: { type: 'string', description: 'What the pattern does and when to use it' },
+            category: { type: 'string', description: 'Pattern category (api, component, testing, etc.)' },
+            when: { type: 'string', description: 'When to apply this pattern' },
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+          required: ['pattern', 'description'],
+        },
+      },
+      {
+        name: 'contxt_update_session',
+        description: 'Log what was accomplished in this AI conversation session. Call at the end of a session.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            summary: { type: 'string', description: 'Summary of what was accomplished' },
+            filesChanged: { type: 'array', items: { type: 'string' }, description: 'Files modified' },
+            decisions: { type: 'array', items: { type: 'string' }, description: 'Key decisions made' },
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+          required: ['summary'],
+        },
+      },
+      {
+        name: 'contxt_get_drafts',
+        description: 'Get pending draft entries awaiting developer review. Show when asked what was captured.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            source: { type: 'string', description: 'Filter by source (auto, hooks, scan)' },
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+        },
+      },
+      {
+        name: 'contxt_confirm_draft',
+        description: 'Confirm and activate a draft entry when the developer explicitly approves it.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'Draft entry ID to confirm' },
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+          required: ['id'],
+        },
+      },
     ],
   };
 });
@@ -261,6 +331,39 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         result = await tools.savePattern(args);
         break;
 
+      // Auto-capture tools
+      case 'contxt_auto_capture_decision':
+        if (!args?.decision || !args?.rationale) {
+          throw new Error('decision and rationale parameters are required');
+        }
+        result = await tools.autoCaptureDecision(args);
+        break;
+
+      case 'contxt_auto_capture_pattern':
+        if (!args?.pattern || !args?.description) {
+          throw new Error('pattern and description parameters are required');
+        }
+        result = await tools.autoCapturePattern(args);
+        break;
+
+      case 'contxt_update_session':
+        if (!args?.summary) {
+          throw new Error('summary parameter is required');
+        }
+        result = await tools.updateSession(args);
+        break;
+
+      case 'contxt_get_drafts':
+        result = await tools.getDrafts(args || {});
+        break;
+
+      case 'contxt_confirm_draft':
+        if (!args?.id) {
+          throw new Error('id parameter is required');
+        }
+        result = await tools.confirmDraft(args);
+        break;
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -293,7 +396,7 @@ async function main() {
   await server.connect(transport);
 
   // Log to stderr so it doesn't interfere with stdio protocol
-  console.error('MemoCore MCP Server running on stdio');
+  console.error('Contxt MCP Server running on stdio');
 }
 
 main().catch((error) => {

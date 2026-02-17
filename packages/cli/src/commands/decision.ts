@@ -2,7 +2,7 @@
  * Decision commands
  */
 
-import type { DecisionInput } from '@memocore/core';
+import type { DecisionInput } from '@contxt/core';
 import { loadProject } from '../utils/project.js';
 import { success, error, formatEntry, formatEntryList, section } from '../utils/output.js';
 

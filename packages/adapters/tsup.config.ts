@@ -9,10 +9,11 @@ const __dirname = dirname(__filename);
 export default defineConfig({
   entry: ['src/index.ts', 'src/sqlite/index.ts', 'src/supabase/index.ts'],
   format: ['esm'],
-  dts: true,
+  dts: false,
   sourcemap: true,
   clean: true,
   splitting: false,
+  external: ['@contxt/core'],
   onSuccess: async () => {
     // Copy schema.sql to dist
     const distDir = join(__dirname, 'dist', 'sqlite');

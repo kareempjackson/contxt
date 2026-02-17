@@ -2,7 +2,7 @@
  * History Commands - Version history and time travel
  */
 
-import { SQLiteDatabase } from '@memocore/adapters/sqlite';
+import { SQLiteDatabase } from '@contxt/adapters/sqlite';
 import { getDbPath } from '../utils/project.js';
 
 export const historyCommand = {

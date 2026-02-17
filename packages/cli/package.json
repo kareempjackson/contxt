@@ -1,9 +1,9 @@
 {
-  "name": "@memocore/cli",
+  "name": "@contxt/cli",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "memocore": "./dist/memocore.js"
+    "contxt": "./dist/contxt.js"
   },
   "scripts": {
     "build": "tsup",
@@ -11,14 +11,17 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@memocore/core": "workspace:*",
-    "@memocore/adapters": "workspace:*",
+    "@contxt/core": "workspace:*",
+    "@contxt/adapters": "workspace:*",
     "commander": "^12.1.0",
     "chalk": "^5.4.1",
     "ora": "^8.1.1",
-    "inquirer": "^12.2.0"
+    "inquirer": "^12.2.0",
+    "glob": "^11.0.0",
+    "chokidar": "^4.0.3"
   },
   "devDependencies": {
+    "@types/node": "^22.10.5",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

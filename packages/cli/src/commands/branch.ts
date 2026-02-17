@@ -2,7 +2,7 @@
  * Branch Commands - Git-like branching for memory
  */
 
-import { SQLiteDatabase } from '@memocore/adapters/sqlite';
+import { SQLiteDatabase } from '@contxt/adapters/sqlite';
 import { getDbPath } from '../utils/project.js';
 
 export const branchCommand = {
@@ -20,7 +20,7 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No MemoCore project found. Run `memocore init` first.');
+          console.error('❌ No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -55,7 +55,7 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No MemoCore project found. Run `memocore init` first.');
+          console.error('❌ No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -94,7 +94,7 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No MemoCore project found. Run `memocore init` first.');
+          console.error('❌ No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -127,7 +127,7 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No MemoCore project found. Run `memocore init` first.');
+          console.error('❌ No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -172,7 +172,7 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No MemoCore project found. Run `memocore init` first.');
+          console.error('❌ No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 

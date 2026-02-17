@@ -2,8 +2,8 @@
  * Load Command - Generate context payload for AI prompts
  */
 
-import { SQLiteDatabase } from '@memocore/adapters/sqlite';
-import { buildContextPayload, buildContextSummary } from '@memocore/core';
+import { SQLiteDatabase } from '@contxt/adapters/sqlite';
+import { buildContextPayload, buildContextSummary } from '@contxt/core';
 import { getDbPath } from '../utils/project.js';
 
 interface LoadOptions {
@@ -26,7 +26,7 @@ export async function loadCommand(options: LoadOptions) {
       const project = await db.getProjectByPath(cwd);
 
       if (!project) {
-        console.error('❌ No MemoCore project found. Run `memocore init` first.');
+        console.error('❌ No Contxt project found. Run `contxt init` first.');
         process.exit(1);
       }
 

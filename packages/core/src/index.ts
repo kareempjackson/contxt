@@ -16,3 +16,9 @@ export * from './engine/context-builder.js';
 
 // Utils
 export * from './utils/tokens.js';
+
+// Scanner
+export * from './scanner.js';
+
+// Rules Parser
+export * from './rules-parser.js';

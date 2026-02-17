@@ -1,9 +1,9 @@
 {
-  "name": "@memocore/mcp",
+  "name": "@contxt/mcp",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "memocore-mcp": "./dist/server.js"
+    "contxt-mcp": "./dist/server.js"
   },
   "scripts": {
     "build": "tsup",
@@ -11,8 +11,8 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@memocore/core": "workspace:*",
-    "@memocore/adapters": "workspace:*",
+    "@contxt/core": "workspace:*",
+    "@contxt/adapters": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "tiktoken": "^1.0.18"
   },

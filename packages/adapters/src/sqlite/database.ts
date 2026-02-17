@@ -8,7 +8,7 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { nanoid } from 'nanoid';
-import type { ILocalDatabase } from '@memocore/core';
+import type { ILocalDatabase } from '@contxt/core';
 import type {
   MemoryEntry,
   Project,
@@ -16,7 +16,7 @@ import type {
   Branch,
   CreateEntryInput,
   EntryQuery,
-} from '@memocore/core';
+} from '@contxt/core';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -171,13 +171,14 @@ export class SQLiteDatabase implements ILocalDatabase {
   async createEntry(input: CreateEntryInput): Promise<MemoryEntry> {
     const id = input.id || nanoid();
     const branch = input.branch || (await this.getActiveBranch(input.projectId));
+    const status = input.status || 'active';
 
     return this.db.transaction(() => {
       const stmt = this.db.prepare(`
         INSERT INTO memory_entries (
           id, project_id, type, title, content, metadata, branch,
-          version, is_synced, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 0, datetime('now'), datetime('now'))
+          version, status, is_synced, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, 0, datetime('now'), datetime('now'))
       `);
 
       stmt.run(
@@ -187,7 +188,8 @@ export class SQLiteDatabase implements ILocalDatabase {
         input.title,
         input.content,
         JSON.stringify(input.metadata || {}),
-        branch
+        branch,
+        status
       );
 
       // Get the created entry
@@ -228,7 +230,7 @@ export class SQLiteDatabase implements ILocalDatabase {
 
       const stmt = this.db.prepare(`
         UPDATE memory_entries
-        SET title = ?, content = ?, metadata = ?, version = ?,
+        SET title = ?, content = ?, metadata = ?, version = ?, status = ?,
             is_synced = 0, updated_at = datetime('now')
         WHERE id = ?
       `);
@@ -238,6 +240,7 @@ export class SQLiteDatabase implements ILocalDatabase {
         updates.content || current.content,
         JSON.stringify(updates.metadata || current.metadata),
         newVersion,
+        updates.status || current.status,
         id
       );
 
@@ -595,6 +598,7 @@ export class SQLiteDatabase implements ILocalDatabase {
       embedding: row.embedding ? JSON.parse(row.embedding) : undefined,
       branch: row.branch,
       version: row.version,
+      status: row.status || 'active',
       isSynced: row.is_synced === 1,
       isArchived: row.is_archived === 1,
       createdAt: new Date(row.created_at),

@@ -5,15 +5,15 @@
 import { join } from 'path';
 
 /**
- * Get the .memocore directory path
+ * Get the .contxt directory path
  */
-export function getMemocoreDir(cwd: string): string {
-  return join(cwd, '.memocore');
+export function getContxtDir(cwd: string): string {
+  return join(cwd, '.contxt');
 }
 
 /**
  * Get the database file path
  */
 export function getDbPath(cwd: string): string {
-  return join(getMemocoreDir(cwd), 'local.db');
+  return join(getContxtDir(cwd), 'local.db');
 }

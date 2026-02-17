@@ -2,12 +2,12 @@
  * Auth Commands - Handle authentication with Supabase
  */
 
-import { SupabaseAuth } from '@memocore/adapters/supabase';
+import { SupabaseAuth } from '@contxt/adapters/supabase';
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 
-const CONFIG_DIR = join(homedir(), '.memocore');
+const CONFIG_DIR = join(homedir(), '.contxt');
 const AUTH_FILE = join(CONFIG_DIR, 'auth.json');
 
 interface AuthData {
@@ -22,12 +22,12 @@ interface AuthData {
  * Get Supabase config from environment or defaults
  */
 function getSupabaseConfig() {
-  const url = process.env.MEMOCORE_SUPABASE_URL;
-  const anonKey = process.env.MEMOCORE_SUPABASE_ANON_KEY;
+  const url = process.env.CONTXT_SUPABASE_URL;
+  const anonKey = process.env.CONTXT_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
     throw new Error(
-      'Supabase configuration missing. Set MEMOCORE_SUPABASE_URL and MEMOCORE_SUPABASE_ANON_KEY environment variables.'
+      'Supabase configuration missing. Set CONTXT_SUPABASE_URL and CONTXT_SUPABASE_ANON_KEY environment variables.'
     );
   }
 
@@ -70,13 +70,13 @@ export const authCommand = {
       const config = getSupabaseConfig();
       const auth = new SupabaseAuth(config);
 
-      console.log('🔐 MemoCore Authentication\n');
+      console.log('🔐 Contxt Authentication\n');
 
       if (options.email) {
         // Magic link flow
         await auth.loginWithMagicLink(options.email);
         console.log('\n✅ Magic link sent! Check your email and click the link.');
-        console.log('   Then run `memocore auth status` to verify.');
+        console.log('   Then run `contxt auth status` to verify.');
       } else {
         // GitHub OAuth flow
         console.log('Opening browser for GitHub authentication...\n');
@@ -95,7 +95,7 @@ export const authCommand = {
         if (result.user.githubUsername) {
           console.log(`   GitHub: @${result.user.githubUsername}`);
         }
-        console.log('\nYou can now use `memocore push` and `memocore pull` to sync your memory.');
+        console.log('\nYou can now use `contxt push` and `contxt pull` to sync your memory.');
       }
     } catch (error) {
       console.error(
@@ -135,7 +135,7 @@ export const authCommand = {
 
       if (!authData) {
         console.log('❌ Not authenticated');
-        console.log('\nRun `memocore auth login` to authenticate.');
+        console.log('\nRun `contxt auth login` to authenticate.');
         process.exit(1);
       }
 
@@ -154,7 +154,7 @@ export const authCommand = {
         await auth.refreshSession();
         console.log('\n✅ Session is valid');
       } catch {
-        console.log('\n⚠️  Session expired. Run `memocore auth login` to re-authenticate.');
+        console.log('\n⚠️  Session expired. Run `contxt auth login` to re-authenticate.');
       }
     } catch (error) {
       console.error(

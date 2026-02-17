@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@source ".";
+
+@theme {
+  /* Colors */
+  --color-bg: #fafaf8;
+  --color-bg-warm: #f0efeb;
+  --color-bg-card: #ffffff;
+  --color-bg-dark: #1a1a1a;
+  --color-bg-dark-2: #222222;
+
+  --color-border: rgb(0 0 0 / 0.08);
+  --color-border-m: rgb(0 0 0 / 0.14);
+
+  --color-text-0: #111111;
+  --color-text-1: #444444;
+  --color-text-2: #777777;
+  --color-text-3: #aaaaaa;
+  --color-text-inv: #fafaf8;
+
+  --color-green: #16a34a;
+  --color-blue: #2563eb;
+  --color-blue-bg: #eef2ff;
+  --color-blue-soft: rgb(10 132 255 / 0.09);
+  --color-violet: #7c3aed;
+  --color-violet-bg: #f5f0ff;
+  --color-violet-dark: #5b21b6;
+  --color-violet-soft: rgb(191 90 242 / 0.09);
+  --color-amber: #d97706;
+  --color-amber-bg: #fffbeb;
+  --color-amber-dark: #92400e;
+  --color-amber-soft: rgb(255 159 10 / 0.09);
+  --color-teal: #0d9488;
+  --color-teal-bg: #f0fdfa;
+  --color-teal-mute: #0a84a0;
+  --color-teal-soft: rgb(100 210 255 / 0.09);
+  --color-rose: #e11d48;
+  --color-rose-soft: rgb(255 69 58 / 0.07);
+}
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: theme(colors.bg);
+    color: theme(colors.text-0);
+    font-family: var(--font-sans), -apple-system, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(0, 0, 0, 0.07);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

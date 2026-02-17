@@ -4,8 +4,8 @@
 
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { SQLiteDatabase } from '@memocore/adapters/sqlite';
-import { MemoryEngine } from '@memocore/core';
+import { SQLiteDatabase } from '@contxt/adapters/sqlite';
+import { MemoryEngine } from '@contxt/core';
 
 export interface ProjectContext {
   db: SQLiteDatabase;
@@ -15,23 +15,23 @@ export interface ProjectContext {
 }
 
 /**
- * Get the .memocore directory path
+ * Get the .contxt directory path
  */
-export function getMemocoreDir(cwd: string = process.cwd()): string {
-  return join(cwd, '.memocore');
+export function getContxtDir(cwd: string = process.cwd()): string {
+  return join(cwd, '.contxt');
 }
 
 /**
  * Get the database file path
  */
 export function getDbPath(cwd: string = process.cwd()): string {
-  return join(getMemocoreDir(cwd), 'local.db');
+  return join(getContxtDir(cwd), 'local.db');
 }
 
 /**
- * Check if current directory is a MemoCore project
+ * Check if current directory is a Contxt project
  */
-export function isMemocoreProject(cwd: string = process.cwd()): boolean {
+export function isContxtProject(cwd: string = process.cwd()): boolean {
   const dbPath = getDbPath(cwd);
   return existsSync(dbPath);
 }
@@ -40,9 +40,9 @@ export function isMemocoreProject(cwd: string = process.cwd()): boolean {
  * Load project context
  */
 export async function loadProject(cwd: string = process.cwd()): Promise<ProjectContext> {
-  if (!isMemocoreProject(cwd)) {
+  if (!isContxtProject(cwd)) {
     throw new Error(
-      'Not a MemoCore project. Run "memocore init" to initialize.'
+      'Not a Contxt project. Run "contxt init" to initialize.'
     );
   }
 
@@ -63,6 +63,23 @@ export async function loadProject(cwd: string = process.cwd()): Promise<ProjectC
     projectId: project.id,
     projectPath: cwd,
   };
+}
+
+/**
+ * Get project database instance
+ */
+export async function getProjectDb(cwd: string = process.cwd()): Promise<SQLiteDatabase> {
+  if (!isContxtProject(cwd)) {
+    throw new Error(
+      'Not a Contxt project. Run "contxt init" to initialize.'
+    );
+  }
+
+  const dbPath = getDbPath(cwd);
+  const db = new SQLiteDatabase(dbPath);
+  await db.initialize();
+
+  return db;
 }
 
 /**
