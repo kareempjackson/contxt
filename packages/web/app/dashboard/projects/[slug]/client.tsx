@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAppDispatch } from '../../../../lib/store/hooks';
 import { openEntry } from '../../../../lib/store/panel-slice';
@@ -7,10 +8,12 @@ import {
   useGetEntriesQuery,
   useGetBranchesQuery,
   useGetSessionsQuery,
+  useUpdateProjectMutation,
 } from '../../../../lib/store/api';
 import { EntryPanel } from '../../../components/entry-panel';
 import { usePanelUrl } from '../../../../lib/hooks/use-panel-url';
-import type { Project, MemoryEntryType } from '@mycontxt/core';
+import { useAutoSync } from '../../../../lib/hooks/use-auto-sync';
+import type { Project, MemoryEntryType, ProjectConfig } from '@mycontxt/core';
 
 const TYPE_BADGES: Record<string, string> = {
   decision: 'bg-blue/10 text-blue',
@@ -61,6 +64,22 @@ export function ProjectDetailClient({ project }: ProjectDetailClientProps) {
 
   const { data: branches = [] } = useGetBranchesQuery(project.id, { skip: tab !== 'branches' });
   const { data: sessions = [] } = useGetSessionsQuery({ projectId: project.id }, { skip: tab !== 'sessions' });
+
+  const [updateProject, { isLoading: isSaving }] = useUpdateProjectMutation();
+  const [config, setConfig] = useState<ProjectConfig>(project.config);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Sync local config state if project prop changes
+  useEffect(() => { setConfig(project.config); }, [project.config]);
+
+  // Auto-sync polling
+  useAutoSync(project);
+
+  async function saveSettings() {
+    await updateProject({ id: project.id, config });
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2000);
+  }
 
   function setTab(t: string) {
     const sp = new URLSearchParams(searchParams.toString());
@@ -234,18 +253,125 @@ export function ProjectDetailClient({ project }: ProjectDetailClientProps) {
         <div className="text-[13px] text-text-2 py-4">History coming in Phase 2.</div>
       )}
       {tab === 'settings' && (
-        <div className="bg-white rounded-[14px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-          <div className="text-[14px] font-semibold text-text-0 mb-4">Project Settings</div>
-          <div className="space-y-3 text-[13px]">
-            <div className="flex justify-between"><span className="text-text-2">Name</span><span className="font-medium text-text-0">{project.name}</span></div>
-            <div className="flex justify-between"><span className="text-text-2">Default branch</span><span className="font-mono text-text-1">{project.config.defaultBranch}</span></div>
-            <div className="flex justify-between"><span className="text-text-2">Max tokens</span><span className="font-mono text-text-1">{project.config.maxTokens.toLocaleString()}</span></div>
-            <div className="flex justify-between"><span className="text-text-2">Auto session</span><span className="text-text-1">{project.config.autoSession ? 'Enabled' : 'Disabled'}</span></div>
+        <div className="space-y-4 max-w-130">
+          {/* Info */}
+          <div className="bg-white rounded-[14px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+            <div className="text-[13px] font-semibold text-text-0 mb-3">Project Info</div>
+            <div className="space-y-2.5 text-[13px]">
+              <div className="flex justify-between items-center">
+                <span className="text-text-2">Name</span>
+                <span className="font-medium text-text-0">{project.name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-2">Default branch</span>
+                <span className="font-mono text-[12px] text-text-1">{config.defaultBranch}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-2">Max tokens</span>
+                <span className="font-mono text-[12px] text-text-1">{config.maxTokens.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Capture */}
+          <div className="bg-white rounded-[14px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+            <div className="text-[13px] font-semibold text-text-0 mb-3">Capture</div>
+            <div className="space-y-3">
+              <ToggleRow
+                label="Auto session"
+                description="Automatically start a session when you begin working"
+                checked={config.autoSession}
+                onChange={(v) => setConfig((c) => ({ ...c, autoSession: v }))}
+              />
+              <ToggleRow
+                label="Stack detection"
+                description="Automatically detect your project's tech stack"
+                checked={config.stackDetection}
+                onChange={(v) => setConfig((c) => ({ ...c, stackDetection: v }))}
+              />
+            </div>
+          </div>
+
+          {/* Sync */}
+          <div className="bg-white rounded-[14px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+            <div className="text-[13px] font-semibold text-text-0 mb-3">Sync</div>
+            <div className="space-y-3">
+              <ToggleRow
+                label="Auto sync"
+                description="Automatically refresh entries from the cloud at a set interval"
+                checked={config.autoSync ?? false}
+                onChange={(v) => setConfig((c) => ({ ...c, autoSync: v }))}
+              />
+              {config.autoSync && (
+                <div className="flex justify-between items-center pl-11">
+                  <span className="text-[12.5px] text-text-2">Sync interval</span>
+                  <select
+                    value={config.syncIntervalMinutes ?? 15}
+                    onChange={(e) => setConfig((c) => ({ ...c, syncIntervalMinutes: Number(e.target.value) }))}
+                    className="text-[12.5px] font-medium text-text-1 bg-black/4 rounded-[7px] px-2.5 py-1 border-none outline-none cursor-pointer"
+                  >
+                    <option value={5}>Every 5 min</option>
+                    <option value={15}>Every 15 min</option>
+                    <option value={30}>Every 30 min</option>
+                    <option value={60}>Every hour</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Save */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={saveSettings}
+              disabled={isSaving}
+              className="h-9 px-5 text-[13px] font-semibold bg-bg-dark text-white rounded-[9px] hover:bg-[#333] transition-all disabled:opacity-50"
+            >
+              {isSaving ? 'Saving…' : 'Save settings'}
+            </button>
+            {saveSuccess && (
+              <span className="text-[12.5px] text-green font-medium">Saved</span>
+            )}
           </div>
         </div>
       )}
 
       <EntryPanel />
     </>
+  );
+}
+
+function ToggleRow({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <div className="text-[13px] font-medium text-text-0">{label}</div>
+        <div className="text-[12px] text-text-3 mt-0.5">{description}</div>
+      </div>
+      <button
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative shrink-0 w-9 h-5 rounded-full transition-colors duration-150 mt-0.5 ${
+          checked ? 'bg-bg-dark' : 'bg-black/10'
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-150 ${
+            checked ? 'translate-x-4' : 'translate-x-0'
+          }`}
+        />
+      </button>
+    </div>
   );
 }

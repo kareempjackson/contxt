@@ -113,6 +113,21 @@ export class SupabaseDatabase implements IRemoteDatabase {
     return this.rowToProject(data);
   }
 
+  async updateProject(projectId: string, updates: { config: Project['config'] }): Promise<Project> {
+    const { data, error } = await this.client
+      .from('projects')
+      .update({ config: updates.config, updated_at: new Date().toISOString() })
+      .eq('id', projectId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update project: ${error.message}`);
+    }
+
+    return this.rowToProject(data);
+  }
+
   // ==================
   // Memory Sync
   // ==================

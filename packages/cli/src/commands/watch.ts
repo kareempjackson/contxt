@@ -7,8 +7,12 @@ import { join, relative } from 'path';
 import { spawn } from 'child_process';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
-import { parseFile, scanCommentToEntry } from '@mycontxt/core';
-import { getProjectDb } from '../utils/project.js';
+import { parseFile, scanCommentToEntry, SyncEngine } from '@mycontxt/core';
+import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
+import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
+import { getProjectDb, getDbPath } from '../utils/project.js';
+import { getAccessToken } from './auth.js';
+import { getSupabaseConfig } from '../config.js';
 
 const PID_FILE = '.contxt/.watch.pid';
 const LOG_FILE = '.contxt/watch.log';
@@ -284,6 +288,28 @@ async function runWatcher() {
     }
 
     log('files', `${files.length} file${files.length !== 1 ? 's' : ''} ${newDrafts > 0 ? `· +${newDrafts} draft${newDrafts !== 1 ? 's' : ''}` : ''}`);
+
+    // Auto-sync push — re-read project config in case settings changed via web UI
+    try {
+      const freshProject = await db.getProjectByPath(cwd);
+      if (freshProject?.config.autoSync) {
+        const accessToken = getAccessToken();
+        if (accessToken) {
+          const supabaseConfig = getSupabaseConfig();
+          const dbPath = getDbPath();
+          const localDb = new SQLiteDatabase(dbPath);
+          await localDb.initialize();
+          const remoteDb = new SupabaseDatabase({ ...supabaseConfig, accessToken });
+          await remoteDb.initialize();
+          const syncEngine = new SyncEngine(localDb, remoteDb);
+          const result = await syncEngine.push(freshProject.id, {});
+          await localDb.close();
+          log('sync', `pushed ${result.pushed} entr${result.pushed !== 1 ? 'ies' : 'y'} to cloud`);
+        }
+      }
+    } catch {
+      // Never crash the watcher on sync errors — they'll retry on next flush
+    }
   }
 
   function scheduleFlush() {

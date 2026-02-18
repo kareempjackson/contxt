@@ -59,6 +59,8 @@ export interface ProjectConfig {
   maxTokens: number;
   autoSession: boolean;
   stackDetection: boolean;
+  autoSync: boolean;
+  syncIntervalMinutes: number;
 }
 
 /**

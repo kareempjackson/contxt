@@ -245,6 +245,22 @@ export const contxtApi = createApi({
       },
       invalidatesTags: ['Drafts'],
     }),
+
+    updateProject: builder.mutation<
+      Project,
+      { id: string; config: Project['config'] }
+    >({
+      queryFn: async ({ id, config }) => {
+        try {
+          const db = await getDb();
+          const data = await db.updateProject(id, { config });
+          return { data };
+        } catch (error) {
+          return { error: { status: 'CUSTOM_ERROR', error: String(error) } };
+        }
+      },
+      invalidatesTags: ['Projects'],
+    }),
   }),
 });
 
@@ -264,4 +280,5 @@ export const {
   useArchiveEntryMutation,
   useConfirmDraftMutation,
   useDiscardDraftMutation,
+  useUpdateProjectMutation,
 } = contxtApi;
