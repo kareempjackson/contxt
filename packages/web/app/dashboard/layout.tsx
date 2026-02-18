@@ -3,6 +3,7 @@ import { createClient } from '../../lib/supabase/server';
 import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
 import { DashboardSidebar } from './sidebar';
 import { RealtimeSync } from './realtime-sync';
+import { UserDropdown } from './user-dropdown';
 
 async function getLayoutData() {
   const supabase = await createClient();
@@ -50,12 +51,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <a href="/docs" className="text-[13px] text-text-2 font-medium hover:text-text-0 transition-colors">
               Docs
             </a>
-            <a href="#" className="text-[13px] text-text-2 font-medium hover:text-text-0 transition-colors">
-              Help
-            </a>
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-[11px] font-bold text-white cursor-pointer">
-              {initials}
-            </div>
+            <UserDropdown initials={initials} />
           </div>
         </nav>
 
