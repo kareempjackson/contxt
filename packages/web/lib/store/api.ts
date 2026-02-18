@@ -1,4 +1,5 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createClient } from '../supabase/client';
 import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
 import type {
   Project,
@@ -10,10 +11,13 @@ import type {
   EntryQuery,
 } from '@mycontxt/core';
 
-function getDb() {
+async function getDb() {
+  const supabase = createClient();
+  const { data: { session } } = await supabase.auth.getSession();
   return new SupabaseDatabase({
     url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    accessToken: session?.access_token,
   });
 }
 
@@ -26,7 +30,7 @@ export const contxtApi = createApi({
     getProjects: builder.query<Project[], string>({
       queryFn: async (userId) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.getProjects(userId);
           return { data };
         } catch (error) {
@@ -39,7 +43,7 @@ export const contxtApi = createApi({
     getEntries: builder.query<MemoryEntry[], EntryQuery>({
       queryFn: async (query) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.listEntries(query);
           return { data };
         } catch (error) {
@@ -52,7 +56,7 @@ export const contxtApi = createApi({
     getEntry: builder.query<MemoryEntry | null, string>({
       queryFn: async (entryId) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.getEntry(entryId);
           return { data };
         } catch (error) {
@@ -68,7 +72,7 @@ export const contxtApi = createApi({
     >({
       queryFn: async ({ projectId, query, type, branch, limit }) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.searchEntries(projectId, query, { type, branch, limit });
           return { data };
         } catch (error) {
@@ -81,7 +85,7 @@ export const contxtApi = createApi({
     getDrafts: builder.query<MemoryEntry[], { userId: string; projectId?: string }>({
       queryFn: async ({ userId, projectId }) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.getDrafts(userId, projectId);
           return { data };
         } catch (error) {
@@ -94,7 +98,7 @@ export const contxtApi = createApi({
     getActivity: builder.query<ActivityItem[], { userId: string; projectId?: string; limit?: number }>({
       queryFn: async ({ userId, projectId, limit }) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.getActivity(userId, { projectId, limit }) as ActivityItem[];
           return { data };
         } catch (error) {
@@ -107,7 +111,7 @@ export const contxtApi = createApi({
     getSessions: builder.query<MemoryEntry[], { projectId: string; limit?: number }>({
       queryFn: async ({ projectId, limit }) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.getSessions(projectId, { limit });
           return { data };
         } catch (error) {
@@ -120,7 +124,7 @@ export const contxtApi = createApi({
     getBranches: builder.query<Branch[], string>({
       queryFn: async (projectId) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.listBranches(projectId);
           return { data };
         } catch (error) {
@@ -133,7 +137,7 @@ export const contxtApi = createApi({
     getUsage: builder.query<UsageStats, string>({
       queryFn: async (userId) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.getUsage(userId);
           return { data };
         } catch (error) {
@@ -149,7 +153,7 @@ export const contxtApi = createApi({
     >({
       queryFn: async ({ userId, query, type, limit }) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.searchAllEntries(userId, query, { type, limit });
           return { data };
         } catch (error) {
@@ -163,7 +167,7 @@ export const contxtApi = createApi({
     createEntry: builder.mutation<MemoryEntry, CreateEntryInput>({
       queryFn: async (input) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.createEntry(input);
           return { data };
         } catch (error) {
@@ -179,7 +183,7 @@ export const contxtApi = createApi({
     >({
       queryFn: async ({ id, updates }) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.updateEntry(id, updates);
           return { data };
         } catch (error) {
@@ -192,7 +196,7 @@ export const contxtApi = createApi({
     archiveEntry: builder.mutation<void, string>({
       queryFn: async (entryId) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           await db.archiveEntry(entryId);
           return { data: undefined };
         } catch (error) {
@@ -205,7 +209,7 @@ export const contxtApi = createApi({
     confirmDraft: builder.mutation<MemoryEntry, string>({
       queryFn: async (entryId) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           const data = await db.confirmDraft(entryId);
           return { data };
         } catch (error) {
@@ -232,7 +236,7 @@ export const contxtApi = createApi({
     discardDraft: builder.mutation<void, string>({
       queryFn: async (entryId) => {
         try {
-          const db = getDb();
+          const db = await getDb();
           await db.discardDraft(entryId);
           return { data: undefined };
         } catch (error) {
