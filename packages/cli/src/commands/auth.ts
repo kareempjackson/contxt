@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { homedir } from 'os';
 import { join } from 'path';
 import { getSupabaseConfig } from '../config.js';
+import { success, error as outputError, warn, header } from '../utils/output.js';
 
 const CONFIG_DIR = join(homedir(), '.contxt');
 const AUTH_FILE = join(CONFIG_DIR, 'auth.json');
@@ -55,12 +56,14 @@ export const authCommand = {
       const config = getSupabaseConfig();
       const auth = new SupabaseAuth(config);
 
-      console.log('🔐 Contxt Authentication\n');
+      header('Contxt Authentication');
+      console.log('');
 
       if (options.email) {
         // Magic link flow
         await auth.loginWithMagicLink(options.email);
-        console.log('\n✅ Magic link sent! Check your email and click the link.');
+        console.log('');
+        success('Magic link sent! Check your email and click the link.');
         console.log('   Then run `contxt auth status` to verify.');
       } else {
         // GitHub OAuth flow
@@ -75,18 +78,16 @@ export const authCommand = {
           githubUsername: result.user.githubUsername,
         });
 
-        console.log('\n✅ Successfully authenticated!');
+        console.log('');
+        success('Successfully authenticated!');
         console.log(`   Email: ${result.user.email}`);
         if (result.user.githubUsername) {
           console.log(`   GitHub: @${result.user.githubUsername}`);
         }
         console.log('\nYou can now use `contxt push` and `contxt pull` to sync your memory.');
       }
-    } catch (error) {
-      console.error(
-        '❌ Authentication failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Authentication failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },
@@ -104,12 +105,9 @@ export const authCommand = {
         await fs.unlink(AUTH_FILE);
       }
 
-      console.log('✅ Logged out successfully');
-    } catch (error) {
-      console.error(
-        '❌ Logout failed:',
-        error instanceof Error ? error.message : error
-      );
+      success('Logged out successfully');
+    } catch (err) {
+      outputError(`Logout failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },
@@ -119,12 +117,12 @@ export const authCommand = {
       const authData = loadAuthData();
 
       if (!authData) {
-        console.log('❌ Not authenticated');
+        outputError('Not authenticated');
         console.log('\nRun `contxt auth login` to authenticate.');
         process.exit(1);
       }
 
-      console.log('✅ Authenticated');
+      success('Authenticated');
       console.log(`   Email: ${authData.email}`);
       if (authData.githubUsername) {
         console.log(`   GitHub: @${authData.githubUsername}`);
@@ -137,15 +135,14 @@ export const authCommand = {
 
       try {
         await auth.refreshSession();
-        console.log('\n✅ Session is valid');
+        console.log('');
+        success('Session is valid');
       } catch {
-        console.log('\n⚠️  Session expired. Run `contxt auth login` to re-authenticate.');
+        console.log('');
+        warn('Session expired. Run `contxt auth login` to re-authenticate.');
       }
-    } catch (error) {
-      console.error(
-        '❌ Status check failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Status check failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },

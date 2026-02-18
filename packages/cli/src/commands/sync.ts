@@ -8,6 +8,7 @@ import { SyncEngine } from '@mycontxt/core';
 import { getDbPath } from '../utils/project.js';
 import { getAccessToken } from './auth.js';
 import { getSupabaseConfig } from '../config.js';
+import { success, error as outputError, warn, loading, dryRun, conflict } from '../utils/output.js';
 
 export const syncCommand = {
   /**
@@ -18,7 +19,7 @@ export const syncCommand = {
       // Check authentication
       const accessToken = getAccessToken();
       if (!accessToken) {
-        console.error('❌ Not authenticated. Run `contxt auth login` first.');
+        outputError('Not authenticated. Run `contxt auth login` first.');
         process.exit(1);
       }
 
@@ -33,7 +34,7 @@ export const syncCommand = {
         const project = await localDb.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No Contxt project found. Run `contxt init` first.');
+          outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -48,7 +49,8 @@ export const syncCommand = {
         // Create sync engine
         const syncEngine = new SyncEngine(localDb, remoteDb);
 
-        console.log('🔄 Pushing local changes to cloud...\n');
+        loading('Pushing local changes to cloud...');
+        console.log('');
 
         // Push changes
         const result = await syncEngine.push(project.id, {
@@ -57,32 +59,27 @@ export const syncCommand = {
         });
 
         if (result.errors.length > 0) {
-          console.error('❌ Push failed:');
+          outputError('Push failed:');
           result.errors.forEach((err) => console.error(`   ${err}`));
           process.exit(1);
         }
 
         if (options.dryRun) {
-          console.log(`📋 Dry run - would push ${result.pushed} entries`);
+          dryRun(`Dry run — would push ${result.pushed} entries`);
         } else {
-          console.log(`✅ Successfully pushed ${result.pushed} entries`);
+          success(`Pushed ${result.pushed} entries`);
         }
 
         if (result.conflicts > 0) {
-          console.log(
-            `⚠️  ${result.conflicts} conflict(s) detected. Use --force to override.`
-          );
+          conflict(`${result.conflicts} conflict(s) detected. Use --force to override.`);
         }
 
         await remoteDb.close();
       } finally {
         await localDb.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ Push failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Push failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },
@@ -95,7 +92,7 @@ export const syncCommand = {
       // Check authentication
       const accessToken = getAccessToken();
       if (!accessToken) {
-        console.error('❌ Not authenticated. Run `contxt auth login` first.');
+        outputError('Not authenticated. Run `contxt auth login` first.');
         process.exit(1);
       }
 
@@ -110,7 +107,7 @@ export const syncCommand = {
         const project = await localDb.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No Contxt project found. Run `contxt init` first.');
+          outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -125,7 +122,8 @@ export const syncCommand = {
         // Create sync engine
         const syncEngine = new SyncEngine(localDb, remoteDb);
 
-        console.log('🔄 Pulling remote changes to local...\n');
+        loading('Pulling remote changes to local...');
+        console.log('');
 
         // Pull changes
         const result = await syncEngine.pull(project.id, {
@@ -134,32 +132,27 @@ export const syncCommand = {
         });
 
         if (result.errors.length > 0) {
-          console.error('❌ Pull failed:');
+          outputError('Pull failed:');
           result.errors.forEach((err) => console.error(`   ${err}`));
           process.exit(1);
         }
 
         if (options.dryRun) {
-          console.log(`📋 Dry run - would pull ${result.pulled} entries`);
+          dryRun(`Dry run — would pull ${result.pulled} entries`);
         } else {
-          console.log(`✅ Successfully pulled ${result.pulled} entries`);
+          success(`Pulled ${result.pulled} entries`);
         }
 
         if (result.conflicts > 0) {
-          console.log(
-            `⚠️  ${result.conflicts} conflict(s) detected. Use --force to override.`
-          );
+          conflict(`${result.conflicts} conflict(s) detected. Use --force to override.`);
         }
 
         await remoteDb.close();
       } finally {
         await localDb.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ Pull failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Pull failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },
@@ -172,7 +165,7 @@ export const syncCommand = {
       // Check authentication
       const accessToken = getAccessToken();
       if (!accessToken) {
-        console.error('❌ Not authenticated. Run `contxt auth login` first.');
+        outputError('Not authenticated. Run `contxt auth login` first.');
         process.exit(1);
       }
 
@@ -187,7 +180,7 @@ export const syncCommand = {
         const project = await localDb.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No Contxt project found. Run `contxt init` first.');
+          outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -202,7 +195,8 @@ export const syncCommand = {
         // Create sync engine
         const syncEngine = new SyncEngine(localDb, remoteDb);
 
-        console.log('🔄 Syncing with cloud (pull + push)...\n');
+        loading('Syncing with cloud (pull + push)...');
+        console.log('');
 
         // Full sync
         const result = await syncEngine.sync(project.id, {
@@ -211,36 +205,29 @@ export const syncCommand = {
         });
 
         if (result.errors.length > 0) {
-          console.error('❌ Sync failed:');
+          outputError('Sync failed:');
           result.errors.forEach((err) => console.error(`   ${err}`));
           process.exit(1);
         }
 
         if (options.dryRun) {
-          console.log(
-            `📋 Dry run - would pull ${result.pulled} and push ${result.pushed} entries`
-          );
+          dryRun(`Dry run — would pull ${result.pulled} and push ${result.pushed} entries`);
         } else {
-          console.log(`✅ Successfully synced`);
+          success('Synced successfully');
           console.log(`   Pulled: ${result.pulled} entries`);
           console.log(`   Pushed: ${result.pushed} entries`);
         }
 
         if (result.conflicts > 0) {
-          console.log(
-            `⚠️  ${result.conflicts} conflict(s) detected. Use --force to override.`
-          );
+          conflict(`${result.conflicts} conflict(s) detected. Use --force to override.`);
         }
 
         await remoteDb.close();
       } finally {
         await localDb.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ Sync failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Sync failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },

@@ -4,6 +4,7 @@
 
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { getDbPath } from '../utils/project.js';
+import { success, error as outputError, section } from '../utils/output.js';
 
 export const historyCommand = {
   /**
@@ -19,17 +20,19 @@ export const historyCommand = {
         const entry = await db.getEntry(entryId);
 
         if (!entry) {
-          console.error('❌ Entry not found.');
+          outputError('Entry not found.');
           process.exit(1);
         }
 
         const versions = await db.getVersionHistory(entryId);
 
-        console.log(`📜 Version History: ${entry.title}\n`);
+        console.log(section(`Version History: ${entry.title}`));
+        console.log('');
         console.log(`Current (v${entry.version}):`);
         console.log(`  Updated: ${entry.updatedAt.toLocaleString()}`);
         console.log(`  Title: ${entry.title}`);
-        console.log(`  Content: ${entry.content.substring(0, 100)}${entry.content.length > 100 ? '...' : ''}\n`);
+        console.log(`  Content: ${entry.content.substring(0, 100)}${entry.content.length > 100 ? '...' : ''}`);
+        console.log('');
 
         if (versions.length > 0) {
           console.log('Previous versions:');
@@ -47,11 +50,8 @@ export const historyCommand = {
       } finally {
         await db.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ History failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`History failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },
@@ -68,16 +68,13 @@ export const historyCommand = {
       try {
         const restored = await db.restoreVersion(entryId, options.version);
 
-        console.log(`✅ Restored '${restored.title}' to version ${options.version}`);
+        success(`Restored '${restored.title}' to version ${options.version}`);
         console.log(`   Current version is now: v${restored.version}`);
       } finally {
         await db.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ Restore failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Restore failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },

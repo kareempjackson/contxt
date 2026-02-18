@@ -87,6 +87,34 @@ export function formatEntryList(entries: MemoryEntry[]): string {
 }
 
 /**
+ * Log loading/progress message
+ */
+export function loading(message: string): void {
+  console.log(chalk.cyan('~'), message);
+}
+
+/**
+ * Log dry-run message
+ */
+export function dryRun(message: string): void {
+  console.log(chalk.dim('→'), chalk.dim(message));
+}
+
+/**
+ * Log conflict message
+ */
+export function conflict(message: string): void {
+  console.log(chalk.yellow('!'), message);
+}
+
+/**
+ * Print a section header
+ */
+export function header(title: string): void {
+  console.log(chalk.bold.cyan('›'), chalk.bold(title));
+}
+
+/**
  * Create a section header
  */
 export function section(title: string): string {

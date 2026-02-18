@@ -5,6 +5,8 @@
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { buildContextPayload, buildContextSummary } from '@mycontxt/core';
 import { getDbPath } from '../utils/project.js';
+import { error as outputError, section } from '../utils/output.js';
+import chalk from 'chalk';
 
 interface LoadOptions {
   task?: string;
@@ -26,7 +28,7 @@ export async function loadCommand(options: LoadOptions) {
       const project = await db.getProjectByPath(cwd);
 
       if (!project) {
-        console.error('❌ No Contxt project found. Run `contxt init` first.');
+        outputError('No Contxt project found. Run `contxt init` first.');
         process.exit(1);
       }
 
@@ -49,9 +51,11 @@ export async function loadCommand(options: LoadOptions) {
       if (options.summary) {
         const summary = buildContextSummary(entries);
 
-        console.log(`📊 Context Summary\n`);
+        console.log(section('Context Summary'));
+        console.log('');
         console.log(`Total entries: ${summary.totalEntries}`);
-        console.log(`Branch: ${branch}\n`);
+        console.log(`Branch: ${branch}`);
+        console.log('');
 
         console.log('By type:');
         for (const [type, count] of Object.entries(summary.byType)) {
@@ -99,16 +103,13 @@ export async function loadCommand(options: LoadOptions) {
 
       // Print stats to stderr so they don't pollute the context
       console.error(
-        `\n📦 Context: ${result.entriesIncluded} entries, ${result.tokensUsed}/${result.budget} tokens`
+        chalk.dim(`\n→ Context: ${result.entriesIncluded} entries, ${result.tokensUsed}/${result.budget} tokens`)
       );
     } finally {
       await db.close();
     }
-  } catch (error) {
-    console.error(
-      '❌ Load failed:',
-      error instanceof Error ? error.message : error
-    );
+  } catch (err) {
+    outputError(`Load failed: ${err instanceof Error ? err.message : err}`);
     process.exit(1);
   }
 }

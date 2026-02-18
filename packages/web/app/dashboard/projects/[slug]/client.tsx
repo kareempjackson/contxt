@@ -98,9 +98,6 @@ export function ProjectDetailClient({ project }: ProjectDetailClientProps) {
           <button className="h-8 px-3 text-[12.5px] font-medium text-text-2 border border-black/[0.08] rounded-[9px] hover:bg-black/[0.03] transition-all">
             Export
           </button>
-          <button className="h-8 px-3 text-[12.5px] font-semibold bg-bg-dark text-white rounded-[9px] hover:bg-[#333] transition-all">
-            Add entry
-          </button>
         </div>
       </div>
 

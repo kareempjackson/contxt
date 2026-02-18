@@ -4,6 +4,7 @@
 
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { getDbPath } from '../utils/project.js';
+import { success, error as outputError } from '../utils/output.js';
 
 export const branchCommand = {
   /**
@@ -20,7 +21,7 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No Contxt project found. Run `contxt init` first.');
+          outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -28,15 +29,12 @@ export const branchCommand = {
 
         await db.createBranch(project.id, name, fromBranch);
 
-        console.log(`✅ Created branch '${name}' from '${fromBranch}'`);
+        success(`Created branch '${name}' from '${fromBranch}'`);
       } finally {
         await db.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ Branch create failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Branch create failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },
@@ -55,7 +53,7 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No Contxt project found. Run `contxt init` first.');
+          outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
@@ -71,11 +69,8 @@ export const branchCommand = {
       } finally {
         await db.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ Branch list failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Branch list failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },
@@ -94,21 +89,18 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No Contxt project found. Run `contxt init` first.');
+          outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
         await db.switchBranch(project.id, name);
 
-        console.log(`✅ Switched to branch '${name}'`);
+        success(`Switched to branch '${name}'`);
       } finally {
         await db.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ Branch switch failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Branch switch failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },
@@ -127,33 +119,30 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No Contxt project found. Run `contxt init` first.');
+          outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
         const activeBranch = await db.getActiveBranch(project.id);
 
         if (name === activeBranch) {
-          console.error('❌ Cannot delete active branch. Switch to another branch first.');
+          outputError('Cannot delete active branch. Switch to another branch first.');
           process.exit(1);
         }
 
         if (name === 'main') {
-          console.error('❌ Cannot delete main branch.');
+          outputError('Cannot delete main branch.');
           process.exit(1);
         }
 
         await db.deleteBranch(project.id, name);
 
-        console.log(`✅ Deleted branch '${name}'`);
+        success(`Deleted branch '${name}'`);
       } finally {
         await db.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ Branch delete failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Branch delete failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },
@@ -172,14 +161,14 @@ export const branchCommand = {
         const project = await db.getProjectByPath(cwd);
 
         if (!project) {
-          console.error('❌ No Contxt project found. Run `contxt init` first.');
+          outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
 
         const targetBranch = await db.getActiveBranch(project.id);
 
         if (sourceBranch === targetBranch) {
-          console.error('❌ Cannot merge a branch into itself.');
+          outputError('Cannot merge a branch into itself.');
           process.exit(1);
         }
 
@@ -225,17 +214,12 @@ export const branchCommand = {
           }
         }
 
-        console.log(
-          `✅ Merged ${merged} entries from '${sourceBranch}' into '${targetBranch}'`
-        );
+        success(`Merged ${merged} entries from '${sourceBranch}' into '${targetBranch}'`);
       } finally {
         await db.close();
       }
-    } catch (error) {
-      console.error(
-        '❌ Branch merge failed:',
-        error instanceof Error ? error.message : error
-      );
+    } catch (err) {
+      outputError(`Branch merge failed: ${err instanceof Error ? err.message : err}`);
       process.exit(1);
     }
   },

@@ -24,14 +24,8 @@ export default async function DashboardProjects() {
   return (
     <>
       {/* Page Top */}
-      <div className="flex items-center justify-between mb-8 mt-1">
+      <div className="mb-8 mt-1">
         <h1 className="text-[20px] font-bold tracking-[-0.5px]">Projects</h1>
-        <button className="h-9 px-4 flex items-center justify-center gap-2 rounded-[9px] bg-blue text-white font-semibold text-[13px] hover:bg-[#0070E0] transition-all shadow-[0_1px_3px_rgba(10,132,255,0.2)] hover:shadow-[0_3px_12px_rgba(10,132,255,0.25)]">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          New project
-        </button>
       </div>
 
       {/* Search Bar */}
