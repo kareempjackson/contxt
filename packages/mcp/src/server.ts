@@ -220,6 +220,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             rationale: { type: 'string', description: 'Why this decision was made' },
             category: { type: 'string', description: 'Category (infrastructure, frontend, backend, etc.)' },
             alternatives: { type: 'string', description: 'Alternatives considered' },
+            conversationId: { type: 'string', description: 'ID to group entries from the same conversation' },
             projectPath: { type: 'string', description: 'Project directory path' },
           },
           required: ['decision', 'rationale'],
@@ -236,9 +237,28 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             description: { type: 'string', description: 'What the pattern does and when to use it' },
             category: { type: 'string', description: 'Pattern category (api, component, testing, etc.)' },
             when: { type: 'string', description: 'When to apply this pattern' },
+            conversationId: { type: 'string', description: 'ID to group entries from the same conversation' },
             projectPath: { type: 'string', description: 'Project directory path' },
           },
           required: ['pattern', 'description'],
+        },
+      },
+      {
+        name: 'contxt_capture_discussion',
+        description:
+          'Capture an insight that emerged from conversation — richer than auto_capture_decision. Use when a decision or pattern came out of back-and-forth; captures context, what was rejected, and why. Saves as a draft.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', enum: ['decision', 'pattern', 'context'], description: 'Entry type' },
+            title: { type: 'string', description: 'Short title for the decision or pattern' },
+            summary: { type: 'string', description: 'Full statement of the decision or pattern' },
+            context: { type: 'string', description: 'What problem or question prompted this' },
+            rejected: { type: 'string', description: 'What was considered and rejected, and why' },
+            conversationId: { type: 'string', description: 'ID to group entries from the same conversation' },
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+          required: ['type', 'title', 'summary', 'context'],
         },
       },
       {
@@ -250,6 +270,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             summary: { type: 'string', description: 'Summary of what was accomplished' },
             filesChanged: { type: 'array', items: { type: 'string' }, description: 'Files modified' },
             decisions: { type: 'array', items: { type: 'string' }, description: 'Key decisions made' },
+            conversationId: { type: 'string', description: 'ID to group entries from the same conversation' },
             projectPath: { type: 'string', description: 'Project directory path' },
           },
           required: ['summary'],
@@ -332,6 +353,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
 
       // Auto-capture tools
+      case 'contxt_capture_discussion':
+        if (!args?.type || !args?.title || !args?.summary || !args?.context) {
+          throw new Error('type, title, summary, and context parameters are required');
+        }
+        result = await tools.captureDiscussion(args);
+        break;
+
       case 'contxt_auto_capture_decision':
         if (!args?.decision || !args?.rationale) {
           throw new Error('decision and rationale parameters are required');

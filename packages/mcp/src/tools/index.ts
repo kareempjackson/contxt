@@ -10,6 +10,7 @@ import { suggestContext } from './suggest-context.js';
 import {
   autoCaptureDecision,
   autoCapturePattern,
+  captureDiscussion,
   updateSession,
   getDrafts,
   confirmDraft,
@@ -19,7 +20,7 @@ import {
 export { suggestContext };
 
 // Export auto-capture tools
-export { autoCaptureDecision, autoCapturePattern, updateSession, getDrafts, confirmDraft };
+export { autoCaptureDecision, autoCapturePattern, captureDiscussion, updateSession, getDrafts, confirmDraft };
 
 /**
  * Get project context - Overview of project

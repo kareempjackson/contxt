@@ -15,6 +15,7 @@ interface AutoCaptureDecisionArgs {
   category?: string;
   alternatives?: string;
   status?: string;
+  conversationId?: string;
   projectPath?: string;
 }
 
@@ -23,6 +24,17 @@ interface AutoCapturePatternArgs {
   description: string;
   category?: string;
   when?: string;
+  conversationId?: string;
+  projectPath?: string;
+}
+
+interface CaptureDiscussionArgs {
+  type: 'decision' | 'pattern' | 'context';
+  title: string;
+  summary: string;
+  context: string;
+  rejected?: string;
+  conversationId?: string;
   projectPath?: string;
 }
 
@@ -30,6 +42,7 @@ interface UpdateSessionArgs {
   summary: string;
   filesChanged?: string[];
   decisions?: string[];
+  conversationId?: string;
   projectPath?: string;
 }
 
@@ -44,7 +57,7 @@ interface ConfirmDraftArgs {
 }
 
 /**
- * Auto-capture a decision from conversation
+ * Auto-capture a decision from conversation.
  * Called by AI when it detects the developer made an architectural decision.
  */
 export async function autoCaptureDecision(args: AutoCaptureDecisionArgs): Promise<string> {
@@ -60,10 +73,7 @@ export async function autoCaptureDecision(args: AutoCaptureDecisionArgs): Promis
       return JSON.stringify({ status: 'error', message: 'No Contxt project found.' });
     }
 
-    const { nanoid } = await import('nanoid');
-    const id = nanoid();
-
-    await db.createEntry({
+    const entry = await db.createEntry({
       projectId: project.id,
       type: 'decision',
       title: args.decision,
@@ -73,6 +83,7 @@ export async function autoCaptureDecision(args: AutoCaptureDecisionArgs): Promis
         category: args.category,
         alternatives: args.alternatives,
         decisionStatus: args.status || 'active',
+        conversationId: args.conversationId,
         capturedAt: new Date().toISOString(),
       },
       status: 'draft',
@@ -80,7 +91,7 @@ export async function autoCaptureDecision(args: AutoCaptureDecisionArgs): Promis
 
     return JSON.stringify({
       status: 'captured',
-      id,
+      id: entry.id,
       message: `Decision captured: ${args.decision} (draft — run \`contxt review\` to confirm)`,
     });
   } finally {
@@ -89,7 +100,7 @@ export async function autoCaptureDecision(args: AutoCaptureDecisionArgs): Promis
 }
 
 /**
- * Auto-capture a pattern from conversation
+ * Auto-capture a pattern from conversation.
  * Called by AI when it identifies a reusable code pattern.
  */
 export async function autoCapturePattern(args: AutoCapturePatternArgs): Promise<string> {
@@ -105,10 +116,7 @@ export async function autoCapturePattern(args: AutoCapturePatternArgs): Promise<
       return JSON.stringify({ status: 'error', message: 'No Contxt project found.' });
     }
 
-    const { nanoid } = await import('nanoid');
-    const id = nanoid();
-
-    await db.createEntry({
+    const entry = await db.createEntry({
       projectId: project.id,
       type: 'pattern',
       title: args.pattern,
@@ -117,6 +125,7 @@ export async function autoCapturePattern(args: AutoCapturePatternArgs): Promise<
         source: 'mcp:auto',
         category: args.category,
         when: args.when,
+        conversationId: args.conversationId,
         capturedAt: new Date().toISOString(),
       },
       status: 'draft',
@@ -124,7 +133,7 @@ export async function autoCapturePattern(args: AutoCapturePatternArgs): Promise<
 
     return JSON.stringify({
       status: 'captured',
-      id,
+      id: entry.id,
       message: `Pattern captured: ${args.pattern} (draft — run \`contxt review\` to confirm)`,
     });
   } finally {
@@ -133,7 +142,59 @@ export async function autoCapturePattern(args: AutoCapturePatternArgs): Promise<
 }
 
 /**
- * Update the active session summary
+ * Capture a discussion outcome — richer alternative to autoCaptureDecision/Pattern.
+ * Use when a decision emerged from back-and-forth; captures context, what was
+ * rejected, and why, in natural language rather than rigid fields.
+ */
+export async function captureDiscussion(args: CaptureDiscussionArgs): Promise<string> {
+  const projectPath = args.projectPath || process.cwd();
+  const dbPath = getDbPath(projectPath);
+
+  const db = new SQLiteDatabase(dbPath);
+  await db.initialize();
+
+  try {
+    const project = await db.getProjectByPath(projectPath);
+    if (!project) {
+      return JSON.stringify({ status: 'error', message: 'No Contxt project found.' });
+    }
+
+    const content = [
+      args.summary,
+      '',
+      `**Context:** ${args.context}`,
+      args.rejected ? `**Rejected:** ${args.rejected}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const entry = await db.createEntry({
+      projectId: project.id,
+      type: args.type,
+      title: args.title,
+      content,
+      metadata: {
+        source: 'mcp:discussion',
+        context: args.context,
+        rejected: args.rejected,
+        conversationId: args.conversationId,
+        capturedAt: new Date().toISOString(),
+      },
+      status: 'draft',
+    });
+
+    return JSON.stringify({
+      status: 'captured',
+      id: entry.id,
+      message: `Discussion captured: ${args.title} (draft — run \`contxt review\` to confirm)`,
+    });
+  } finally {
+    await db.close();
+  }
+}
+
+/**
+ * Update the active session summary.
  * Called by AI at the end of a conversation to log what was accomplished.
  */
 export async function updateSession(args: UpdateSessionArgs): Promise<string> {
@@ -169,7 +230,7 @@ export async function updateSession(args: UpdateSessionArgs): Promise<string> {
         },
       });
     } else {
-      // Create a session entry
+      // Create a session entry as draft — consistent with all other auto-captures
       await db.createEntry({
         projectId: project.id,
         type: 'session',
@@ -179,9 +240,10 @@ export async function updateSession(args: UpdateSessionArgs): Promise<string> {
           source: 'mcp:auto',
           filesChanged: args.filesChanged,
           decisions: args.decisions,
+          conversationId: args.conversationId,
           startedAt: new Date().toISOString(),
         },
-        status: 'active',
+        status: 'draft',
       });
     }
 
@@ -195,7 +257,7 @@ export async function updateSession(args: UpdateSessionArgs): Promise<string> {
 }
 
 /**
- * Get all draft entries pending review
+ * Get all draft entries pending review.
  * Called by AI to surface pending drafts for the developer.
  */
 export async function getDrafts(args: GetDraftsArgs): Promise<string> {
@@ -229,6 +291,7 @@ export async function getDrafts(args: GetDraftsArgs): Promise<string> {
       type: d.type,
       title: d.title,
       source: d.metadata.source,
+      conversationId: d.metadata.conversationId,
       capturedAt: d.metadata.capturedAt || d.createdAt,
     }));
 
@@ -244,7 +307,7 @@ export async function getDrafts(args: GetDraftsArgs): Promise<string> {
 }
 
 /**
- * Confirm a draft entry
+ * Confirm a draft entry.
  * Called by AI when the developer explicitly approves a captured draft.
  */
 export async function confirmDraft(args: ConfirmDraftArgs): Promise<string> {
