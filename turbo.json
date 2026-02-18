@@ -6,6 +6,11 @@
       "outputs": ["dist/**"],
       "env": ["CONTXT_SUPABASE_URL", "CONTXT_SUPABASE_ANON_KEY", "ENABLE_EXPERIMENTAL_COREPACK"]
     },
+    "web#build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
+    },
     "test": {
       "dependsOn": ["build"]
     },
