@@ -7,7 +7,7 @@ import Database from 'better-sqlite3';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { nanoid } from 'nanoid';
+import { randomUUID } from 'crypto';
 import type { ILocalDatabase } from '@mycontxt/core';
 import type {
   MemoryEntry,
@@ -60,7 +60,7 @@ export class SQLiteDatabase implements ILocalDatabase {
       return existing;
     }
 
-    const id = nanoid();
+    const id = randomUUID();
     const defaultConfig: ProjectConfig = {
       defaultBranch: 'main',
       maxTokens: 4000,
@@ -169,7 +169,7 @@ export class SQLiteDatabase implements ILocalDatabase {
   // ==================
 
   async createEntry(input: CreateEntryInput): Promise<MemoryEntry> {
-    const id = input.id || nanoid();
+    const id = input.id || randomUUID();
     const branch = input.branch || (await this.getActiveBranch(input.projectId));
     const status = input.status || 'active';
 
@@ -426,7 +426,7 @@ export class SQLiteDatabase implements ILocalDatabase {
     name: string,
     fromBranch: string
   ): Promise<Branch> {
-    const id = nanoid();
+    const id = randomUUID();
 
     this.db
       .prepare(`
@@ -519,7 +519,7 @@ export class SQLiteDatabase implements ILocalDatabase {
   }
 
   private createVersionSnapshot(entry: MemoryEntry): void {
-    const id = nanoid();
+    const id = randomUUID();
 
     this.db
       .prepare(`

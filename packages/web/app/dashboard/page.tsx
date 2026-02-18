@@ -7,10 +7,12 @@ async function getProjects(): Promise<Project[]> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login');
+  const { data: { session } } = await supabase.auth.getSession();
 
   const db = new SupabaseDatabase({
     url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    accessToken: session?.access_token,
   });
   return db.getProjects(user.id).catch(() => []);
 }
