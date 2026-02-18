@@ -4,7 +4,7 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "env": ["CONTXT_SUPABASE_URL", "CONTXT_SUPABASE_ANON_KEY"]
+      "env": ["CONTXT_SUPABASE_URL", "CONTXT_SUPABASE_ANON_KEY", "ENABLE_EXPERIMENTAL_COREPACK"]
     },
     "test": {
       "dependsOn": ["build"]
