@@ -124,3 +124,12 @@ CREATE TABLE IF NOT EXISTS project_config (
   active_branch TEXT NOT NULL DEFAULT 'main',
   FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
+
+-- ==================
+-- Plan Cache (for offline-first billing)
+-- ==================
+CREATE TABLE IF NOT EXISTS plan_cache (
+  user_id TEXT PRIMARY KEY,
+  plan_id TEXT NOT NULL,
+  fetched_at INTEGER NOT NULL
+);

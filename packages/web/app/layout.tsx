@@ -30,6 +30,10 @@ export const metadata: Metadata = {
   title: 'Contxt — Memory for AI Agents',
   description:
     'Persistent, versioned, project-scoped memory for AI coding agents. Push context once — your tools remember it forever.',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+  },
   openGraph: {
     title: 'Contxt — GitHub for AI Context',
     description: 'Your AI forgets. Contxt remembers.',

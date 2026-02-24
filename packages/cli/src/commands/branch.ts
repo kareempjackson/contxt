@@ -5,6 +5,7 @@
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { getDbPath } from '../utils/project.js';
 import { success, error as outputError } from '../utils/output.js';
+import { createUsageGate, enforceGate } from '../utils/usage-gate.js';
 
 export const branchCommand = {
   /**
@@ -24,6 +25,11 @@ export const branchCommand = {
           outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
+
+        // Check if branching is enabled
+        const gate = await createUsageGate(db, project.id);
+        const result = gate.checkFeature('branchingEnabled');
+        enforceGate(result);
 
         const fromBranch = options.from || (await db.getActiveBranch(project.id));
 
@@ -92,6 +98,11 @@ export const branchCommand = {
           outputError('No Contxt project found. Run `contxt init` first.');
           process.exit(1);
         }
+
+        // Check if branching is enabled
+        const gate = await createUsageGate(db, project.id);
+        const result = gate.checkFeature('branchingEnabled');
+        enforceGate(result);
 
         await db.switchBranch(project.id, name);
 

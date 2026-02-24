@@ -190,6 +190,20 @@ export interface ILocalDatabase {
    * Restore an entry to a specific version
    */
   restoreVersion(entryId: string, version: number): Promise<MemoryEntry>;
+
+  // ==================
+  // Plan Caching
+  // ==================
+
+  /**
+   * Get cached plan for a user (for offline-first access)
+   */
+  getCachedPlan(userId: string): { planId: string; fetchedAt: number } | null;
+
+  /**
+   * Cache user's plan locally
+   */
+  cachePlan(userId: string, planId: string): void;
 }
 
 /**
@@ -270,4 +284,13 @@ export interface IRemoteDatabase {
    * Get branches from remote
    */
   listBranches(projectId: string): Promise<Branch[]>;
+
+  // ==================
+  // User Profile
+  // ==================
+
+  /**
+   * Get user profile (for plan resolution)
+   */
+  getUserProfile(userId: string): Promise<{ plan_id?: string } | null>;
 }

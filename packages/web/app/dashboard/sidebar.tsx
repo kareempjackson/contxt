@@ -153,15 +153,6 @@ export function DashboardSidebar({ projects, draftCount, user }: DashboardSideba
               </svg>
               Settings
             </a>
-            <a
-              href="/dashboard/api-keys"
-              className="flex items-center gap-2 h-[34px] px-3 rounded-[9px] text-[13px] font-medium text-text-2 hover:bg-black/[0.028] hover:text-text-1 transition-all"
-            >
-              <svg className="w-4 h-4 text-text-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-              </svg>
-              API Keys
-            </a>
           </div>
         </nav>
 

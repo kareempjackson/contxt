@@ -584,6 +584,29 @@ export class SQLiteDatabase implements ILocalDatabase {
   }
 
   // ==================
+  // Plan Caching (for offline-first billing)
+  // ==================
+
+  getCachedPlan(userId: string): { planId: string; fetchedAt: number } | null {
+    const row = this.db.prepare(
+      'SELECT plan_id, fetched_at FROM plan_cache WHERE user_id = ?'
+    ).get(userId) as { plan_id: string; fetched_at: number } | undefined;
+
+    if (!row) return null;
+
+    return {
+      planId: row.plan_id,
+      fetchedAt: row.fetched_at,
+    };
+  }
+
+  cachePlan(userId: string, planId: string): void {
+    this.db.prepare(
+      'INSERT OR REPLACE INTO plan_cache (user_id, plan_id, fetched_at) VALUES (?, ?, ?)'
+    ).run(userId, planId, Date.now());
+  }
+
+  // ==================
   // Helper Methods
   // ==================
 

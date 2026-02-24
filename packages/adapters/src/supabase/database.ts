@@ -572,6 +572,32 @@ export class SupabaseDatabase implements IRemoteDatabase {
     };
   }
 
+  // ==================
+  // User Profile (for plan resolution)
+  // ==================
+
+  async getUserProfile(userId: string): Promise<{ plan_id?: string } | null> {
+    const { data, error } = await this.client
+      .from('user_profiles')
+      .select('plan_id')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // Not found
+        return null;
+      }
+      throw error;
+    }
+
+    return data;
+  }
+
+  // ==================
+  // Helper Methods
+  // ==================
+
   private rowToEntry(row: any): MemoryEntry {
     return {
       id: row.id,

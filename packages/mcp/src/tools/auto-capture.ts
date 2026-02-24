@@ -8,6 +8,7 @@
 
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { getDbPath } from '../utils/project.js';
+import { checkEntryAllowed } from '../utils/usage-gate.js';
 
 interface AutoCaptureDecisionArgs {
   decision: string;
@@ -73,6 +74,15 @@ export async function autoCaptureDecision(args: AutoCaptureDecisionArgs): Promis
       return JSON.stringify({ status: 'error', message: 'No Contxt project found.' });
     }
 
+    // Check usage limits (graceful degradation - never block the AI)
+    const gateCheck = await checkEntryAllowed(db, project.id);
+    if (!gateCheck.allowed) {
+      return JSON.stringify({
+        status: 'limit_reached',
+        message: `Decision noted (not saved - usage limit reached).${gateCheck.message}`,
+      });
+    }
+
     const entry = await db.createEntry({
       projectId: project.id,
       type: 'decision',
@@ -116,6 +126,15 @@ export async function autoCapturePattern(args: AutoCapturePatternArgs): Promise<
       return JSON.stringify({ status: 'error', message: 'No Contxt project found.' });
     }
 
+    // Check usage limits (graceful degradation - never block the AI)
+    const gateCheck = await checkEntryAllowed(db, project.id);
+    if (!gateCheck.allowed) {
+      return JSON.stringify({
+        status: 'limit_reached',
+        message: `Pattern noted (not saved - usage limit reached).${gateCheck.message}`,
+      });
+    }
+
     const entry = await db.createEntry({
       projectId: project.id,
       type: 'pattern',
@@ -157,6 +176,15 @@ export async function captureDiscussion(args: CaptureDiscussionArgs): Promise<st
     const project = await db.getProjectByPath(projectPath);
     if (!project) {
       return JSON.stringify({ status: 'error', message: 'No Contxt project found.' });
+    }
+
+    // Check usage limits (graceful degradation - never block the AI)
+    const gateCheck = await checkEntryAllowed(db, project.id);
+    if (!gateCheck.allowed) {
+      return JSON.stringify({
+        status: 'limit_reached',
+        message: `Discussion noted (not saved - usage limit reached).${gateCheck.message}`,
+      });
     }
 
     const content = [
@@ -230,6 +258,15 @@ export async function updateSession(args: UpdateSessionArgs): Promise<string> {
         },
       });
     } else {
+      // Check usage limits before creating new session entry
+      const gateCheck = await checkEntryAllowed(db, project.id);
+      if (!gateCheck.allowed) {
+        return JSON.stringify({
+          status: 'limit_reached',
+          message: `Session noted (not saved - usage limit reached).${gateCheck.message}`,
+        });
+      }
+
       // Create a session entry as draft — consistent with all other auto-captures
       await db.createEntry({
         projectId: project.id,

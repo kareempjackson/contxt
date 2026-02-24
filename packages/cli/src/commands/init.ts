@@ -7,6 +7,7 @@ import { basename, join } from 'path';
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { getContxtDir, getDbPath, isContxtProject } from '../utils/project.js';
 import { success, error, info } from '../utils/output.js';
+import { createUsageGate, enforceGate } from '../utils/usage-gate.js';
 
 const CLAUDE_MD_TEMPLATE = `# Contxt — Active Context Capture
 
@@ -78,6 +79,11 @@ export async function initCommand(options: InitOptions): Promise<void> {
     const dbPath = getDbPath(cwd);
     const db = new SQLiteDatabase(dbPath);
     await db.initialize();
+
+    // Check usage limits before creating project
+    const gate = await createUsageGate(db);
+    const result = await gate.checkProjectCreate();
+    enforceGate(result);
 
     // Create project
     const projectName = options.name || basename(cwd);

@@ -5,6 +5,7 @@
 import type { DecisionInput } from '@mycontxt/core';
 import { loadProject } from '../utils/project.js';
 import { success, error, formatEntry, formatEntryList, section } from '../utils/output.js';
+import { createUsageGate, enforceGate } from '../utils/usage-gate.js';
 
 interface AddOptions {
   title: string;
@@ -21,6 +22,11 @@ interface ListOptions {
 async function add(options: AddOptions): Promise<void> {
   try {
     const { engine, projectId, db } = await loadProject();
+
+    // Check usage limits before creating entry
+    const gate = await createUsageGate(db, projectId);
+    const result = await gate.checkEntryCreate();
+    enforceGate(result);
 
     const input: DecisionInput = {
       title: options.title,
