@@ -5,7 +5,7 @@
 
 import type { MemoryEntry, SuggestOptions, RankedEntry } from '../types.js';
 import { rankEntries } from './relevance.js';
-import { countTokens, fitToBudget, buildContext } from '../utils/tokens.js';
+import { countTokens, countEntryTokens, fitToBudget, buildContext } from '../utils/tokens.js';
 
 export interface ContextMode {
   type: 'task' | 'files' | 'all';
@@ -23,7 +23,9 @@ export interface ContextBuilderOptions extends ContextMode {
 export interface ContextResult {
   context: string;
   entriesIncluded: number;
+  entriesFiltered: number;
   tokensUsed: number;
+  tokensSaved: number;
   budget: number;
 }
 
@@ -90,6 +92,12 @@ export function buildContextPayload(
     );
   }
 
+  // Compute total tokens of all candidate entries (before budget fitting)
+  const totalEntryTokens = rankedEntries.reduce(
+    (sum, ranked) => sum + countEntryTokens(ranked.entry),
+    0
+  );
+
   // Fit to token budget
   const fitted = fitToBudget(rankedEntries, budget);
 
@@ -100,7 +108,9 @@ export function buildContextPayload(
   return {
     context,
     entriesIncluded: fitted.length,
+    entriesFiltered: rankedEntries.length - fitted.length,
     tokensUsed,
+    tokensSaved: Math.max(0, totalEntryTokens - tokensUsed),
     budget,
   };
 }

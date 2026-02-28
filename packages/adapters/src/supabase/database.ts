@@ -249,6 +249,13 @@ export class SupabaseDatabase implements IRemoteDatabase {
     return data.map((row: any) => this.rowToEntry(row));
   }
 
+  async generateEmbeddings(entryIds: string[]): Promise<void> {
+    // Fire-and-forget — edge function handles batching (max 100)
+    await this.client.functions.invoke('embed', {
+      body: { entryIds },
+    });
+  }
+
   // ==================
   // Branching
   // ==================

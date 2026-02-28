@@ -3,10 +3,42 @@
  */
 
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
+import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
 import { buildContextPayload, buildContextSummary } from '@mycontxt/core';
 import { getDbPath } from '../utils/project.js';
+import { getSupabaseConfig } from '../config.js';
 import { error as outputError, section } from '../utils/output.js';
 import chalk from 'chalk';
+
+const MODEL_COSTS_PER_1K: Record<string, number> = {
+  'claude-sonnet': 0.003,
+  'claude-haiku':  0.00025,
+  'claude-opus':   0.015,
+  'gpt-4o':        0.0025,
+  'gpt-4':         0.03,
+  'gpt-3.5':       0.0005,
+};
+const DEFAULT_MODEL = 'claude-sonnet';
+
+function formatCost(tokens: number, model: string): string {
+  const costPerK = MODEL_COSTS_PER_1K[model] ?? MODEL_COSTS_PER_1K[DEFAULT_MODEL];
+  const cost = (tokens / 1000) * costPerK;
+  return `$${cost.toFixed(4)}`;
+}
+
+async function generateQueryEmbedding(text: string, apiKey: string): Promise<number[] | null> {
+  try {
+    const res = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'text-embedding-3-small', input: text }),
+    });
+    const data = await res.json();
+    return data.data?.[0]?.embedding ?? null;
+  } catch {
+    return null;
+  }
+}
 
 interface LoadOptions {
   task?: string;
@@ -88,8 +120,35 @@ export async function loadCommand(options: LoadOptions) {
         mode = 'all';
       }
 
+      const totalEntryCount = entries.length;
+
+      // In task mode, try semantic search via remote DB before falling back to keyword scoring
+      let resolvedEntries = entries;
+      if (mode === 'task' && options.task) {
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (apiKey) {
+          try {
+            const config = getSupabaseConfig();
+            const remoteDb = new SupabaseDatabase(config);
+            const embedding = await generateQueryEmbedding(options.task, apiKey);
+            if (embedding) {
+              const semanticResults = await remoteDb.semanticSearch(project.id, embedding, {
+                branch,
+                limit: 20,
+                minSimilarity: 0.65,
+              }).catch(() => []);
+              if (semanticResults.length > 0) {
+                resolvedEntries = semanticResults;
+              }
+            }
+          } catch {
+            // No remote config — use local keyword scoring
+          }
+        }
+      }
+
       // Build context
-      const result = buildContextPayload(entries, {
+      const result = buildContextPayload(resolvedEntries, {
         projectId: project.id,
         type: mode,
         taskDescription: options.task,
@@ -102,9 +161,24 @@ export async function loadCommand(options: LoadOptions) {
       console.log(result.context);
 
       // Print stats to stderr so they don't pollute the context
-      console.error(
-        chalk.dim(`\n→ Context: ${result.entriesIncluded} entries, ${result.tokensUsed}/${result.budget} tokens`)
-      );
+      const model = process.env.CONTXT_MODEL ?? DEFAULT_MODEL;
+      const totalFiltered = totalEntryCount - result.entriesIncluded;
+
+      if (totalFiltered > 0 && result.tokensSaved > 0) {
+        const filteredCost = formatCost(result.tokensUsed, model);
+        const fullCost = formatCost(result.tokensUsed + result.tokensSaved, model);
+        console.error(
+          chalk.dim(
+            `\n→ ${result.entriesIncluded} entries loaded · ${result.tokensUsed} tokens · ` +
+            `saved ${result.tokensSaved.toLocaleString()} tokens (${totalFiltered} filtered) · ` +
+            `~${filteredCost} vs ${fullCost} full load`
+          )
+        );
+      } else {
+        console.error(
+          chalk.dim(`\n→ ${result.entriesIncluded} entries loaded · ${result.tokensUsed}/${result.budget} tokens`)
+        );
+      }
     } finally {
       await db.close();
     }

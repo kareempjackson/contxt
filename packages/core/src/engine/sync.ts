@@ -89,6 +89,12 @@ export class SyncEngine {
       if (!options.dryRun) {
         await this.remote.pushEntries(unsyncedEntries);
 
+        // Trigger embedding generation for pushed entries (non-blocking)
+        const pushedIds = unsyncedEntries.map((e) => e.id);
+        if (typeof (this.remote as any).generateEmbeddings === 'function') {
+          (this.remote as any).generateEmbeddings(pushedIds).catch(() => {});
+        }
+
         // Mark entries as synced locally
         await this.local.markSynced(unsyncedEntries.map((e) => e.id));
       }
