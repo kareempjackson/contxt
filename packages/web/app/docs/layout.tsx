@@ -72,20 +72,6 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             <a href="/" className="font-bold text-[17px] tracking-tight">
               contxt
             </a>
-            <div className="hidden md:flex items-center gap-6 text-sm">
-              <a href="/#features" className="text-text-2 hover:text-text-0 transition-colors">
-                Features
-              </a>
-              <a href="/docs" className="text-text-0 font-medium">
-                Docs
-              </a>
-              <a href="/#pricing" className="text-text-2 hover:text-text-0 transition-colors">
-                Pricing
-              </a>
-              <a href="#" className="text-text-2 hover:text-text-0 transition-colors">
-                GitHub
-              </a>
-            </div>
           </div>
           <div className="flex items-center gap-3">
             <button

@@ -30,9 +30,9 @@ export default function Home() {
             <a href="/auth/login" className="h-9 px-[18px] text-[13.5px] font-semibold rounded-full bg-transparent text-text-2 hover:text-text-0 transition-colors flex items-center justify-center">
               Sign in
             </a>
-            <button className="h-9 px-[18px] text-[13.5px] font-semibold rounded-full bg-bg-dark text-text-inv hover:bg-[#333] transition-colors">
-              Get early access
-            </button>
+            <a href="/auth/login" className="h-9 px-[18px] text-[13.5px] font-semibold rounded-full bg-bg-dark text-text-inv hover:bg-[#333] transition-colors flex items-center">
+              Get contxt
+            </a>
           </div>
         </div>
       </nav>
@@ -51,12 +51,12 @@ export default function Home() {
         </FadeUp>
         <FadeUp delay={0.2}>
           <div className="flex gap-4 justify-center items-center mb-20">
-            <button className="h-[52px] px-9 text-[15.5px] font-semibold rounded-full bg-bg-dark text-text-inv hover:bg-[#333] transition-colors">
-              Get early access
-            </button>
-            <button className="text-[15.5px] font-semibold underline underline-offset-4 decoration-[1.5px] hover:opacity-50 transition-opacity">
+            <a href="/auth/login" className="h-[52px] px-9 text-[15.5px] font-semibold rounded-full bg-bg-dark text-text-inv hover:bg-[#333] transition-colors flex items-center">
+              Get contxt
+            </a>
+            <a href="/docs" className="text-[15.5px] font-semibold underline underline-offset-4 decoration-[1.5px] hover:opacity-50 transition-opacity">
               Explore the docs
-            </button>
+            </a>
           </div>
         </FadeUp>
       </div>
@@ -379,6 +379,80 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Context Wall Section */}
+      <section className="py-[140px] px-12 bg-bg-dark">
+        <div className="max-w-[1320px] mx-auto">
+          <FadeUp>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+              {/* Left: Copy */}
+              <div>
+                <div className="font-mono text-[11px] font-bold uppercase tracking-[2px] text-white/30 mb-4">
+                  #04 Context Limit
+                </div>
+                <h3 className="font-serif text-[clamp(32px,4vw,52px)] font-normal leading-[1.15] tracking-tight mb-5 text-white">
+                  The context wall.<br />Meet your escape hatch.
+                </h3>
+                <p className="text-[17px] text-white/50 leading-[1.75] mb-8">
+                  You&apos;re deep in a session — 2 hours in, real momentum — and Claude hits the limit.
+                  &ldquo;This conversation cannot be compacted anymore.&rdquo; Without Contxt, that context is gone.
+                  With Contxt, it was already saved.
+                </p>
+                <ul className="space-y-4 text-[15px] text-white/60">
+                  <li className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">1</span>
+                    <span>Run <span className="font-mono text-[13px] bg-white/[0.06] px-2 py-0.5 rounded text-white/80">contxt push</span> anytime during your session — decisions and patterns are saved to the cloud</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">2</span>
+                    <span>Start a fresh conversation — no more hitting the wall</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">3</span>
+                    <span>Run <span className="font-mono text-[13px] bg-white/[0.06] px-2 py-0.5 rounded text-white/80">contxt load --task &quot;...&quot;</span> — get 800 tokens of the right context, not 40k of history</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Right: Before/After terminal cards */}
+              <div className="space-y-4">
+                {/* Before */}
+                <div className="bg-[#1a0a0a] border border-red-900/40 rounded-[16px] overflow-hidden">
+                  <div className="h-10 flex items-center px-4 gap-2 border-b border-red-900/30">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></span>
+                    <span className="ml-2 font-mono text-[11px] text-red-400/60">claude code — 3h 12m</span>
+                  </div>
+                  <div className="p-5 font-mono text-[13px] leading-[1.8]">
+                    <div className="text-red-400/80">⚠ This conversation cannot be compacted anymore.</div>
+                    <div className="text-white/25 text-[12px] mt-1">Start a new session to continue.</div>
+                  </div>
+                </div>
+
+                {/* After */}
+                <div className="bg-[#0a1a0f] border border-green-900/40 rounded-[16px] overflow-hidden">
+                  <div className="h-10 flex items-center px-4 gap-2 border-b border-green-900/30">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></span>
+                    <span className="ml-2 font-mono text-[11px] text-green-400/60">~/my-saas-app — new session</span>
+                  </div>
+                  <div className="p-5 font-mono text-[13px] leading-[1.8]">
+                    <div className="flex gap-2">
+                      <span className="text-white/25">$</span>
+                      <span className="text-white/80">contxt load <span className="text-[#C4B5FD]">--task &quot;add Stripe webhooks&quot;</span></span>
+                    </div>
+                    <div className="text-[#6EE7B7] font-medium">✓ 5 entries loaded · 812 tokens</div>
+                    <div className="text-white/25 text-[12px]">Filtered 24 irrelevant entries (saved 3,388 tokens)</div>
+                    <div className="mt-2 text-white/40 text-[12px]">Context restored. Continue where you left off.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FadeUp>
+        </div>
+      </section>
+
       {/* Integrations */}
       <div className="py-[140px] px-12 max-w-[1320px] mx-auto">
         <FadeUp>
@@ -543,63 +617,21 @@ export default function Home() {
         </FadeUp>
         <FadeUp delay={0.2}>
           <div className="flex gap-4 justify-center items-center">
-            <button className="h-[52px] px-9 text-[15.5px] font-semibold rounded-full bg-bg-dark text-text-inv hover:bg-[#333] transition-colors">
-              Get early access
-            </button>
-            <button className="text-[15.5px] font-semibold underline underline-offset-4 decoration-[1.5px] hover:opacity-50 transition-opacity">
-              Star on GitHub
-            </button>
+            <a href="/auth/login" className="h-[52px] px-9 text-[15.5px] font-semibold rounded-full bg-bg-dark text-text-inv hover:bg-[#333] transition-colors flex items-center">
+              Get contxt
+            </a>
           </div>
         </FadeUp>
       </div>
 
       {/* Footer */}
-      <footer className="bg-bg-dark text-text-inv py-20 px-12">
-        <div className="max-w-[1320px] mx-auto">
-          <div className="flex justify-between items-start pb-14 border-b border-white/[0.06]">
-            <div className="max-w-[320px]">
-              <div className="font-bold text-lg mb-4">contxt</div>
-              <div className="text-sm text-white/35 leading-[1.7]">
-                Persistent, versioned memory for AI coding agents. Push context once — your tools remember it forever.
-              </div>
-            </div>
-            <div className="flex gap-16">
-              <div>
-                <h4 className="font-mono text-[10.5px] font-bold uppercase tracking-[2px] text-white/30 mb-5">
-                  Product
-                </h4>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors mb-3">Features</a>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors mb-3">Smart Suggest</a>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors mb-3">Pricing</a>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors">Changelog</a>
-              </div>
-              <div>
-                <h4 className="font-mono text-[10.5px] font-bold uppercase tracking-[2px] text-white/30 mb-5">
-                  Developers
-                </h4>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors mb-3">Documentation</a>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors mb-3">API Reference</a>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors mb-3">CLI Quickstart</a>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors">MCP Setup</a>
-              </div>
-              <div>
-                <h4 className="font-mono text-[10.5px] font-bold uppercase tracking-[2px] text-white/30 mb-5">
-                  Company
-                </h4>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors mb-3">About</a>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors mb-3">Blog</a>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors mb-3">Privacy</a>
-                <a href="#" className="block text-sm text-white/50 hover:text-white transition-colors">Terms</a>
-              </div>
-            </div>
-          </div>
-          <div className="flex justify-between items-center pt-8">
-            <div className="text-[13px] text-white/20">© 2026 Contxt · Ghost Savvy Studios</div>
-            <div className="flex gap-5">
-              <a href="#" className="text-[13px] text-white/25 hover:text-white/60 transition-colors">GitHub</a>
-              <a href="#" className="text-[13px] text-white/25 hover:text-white/60 transition-colors">Twitter</a>
-              <a href="#" className="text-[13px] text-white/25 hover:text-white/60 transition-colors">Discord</a>
-            </div>
+      <footer className="bg-bg-dark text-text-inv py-10 px-12">
+        <div className="max-w-[1320px] mx-auto flex justify-between items-center">
+          <div className="text-[13px] text-white/20">© 2026 Contxt · Ghost Savvy Studios</div>
+          <div className="flex gap-6">
+            <a href="/docs" className="text-[13px] text-white/30 hover:text-white/70 transition-colors">Docs</a>
+            <a href="/privacy" className="text-[13px] text-white/30 hover:text-white/70 transition-colors">Privacy</a>
+            <a href="/terms" className="text-[13px] text-white/30 hover:text-white/70 transition-colors">Terms</a>
           </div>
         </div>
       </footer>
