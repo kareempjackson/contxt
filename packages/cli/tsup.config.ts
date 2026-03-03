@@ -8,6 +8,8 @@ export default defineConfig({
   clean: true,
   splitting: false,
   shims: true,
+  noExternal: ['@mycontxt/core', '@mycontxt/adapters'],
+  external: ['better-sqlite3', 'tiktoken'],
   esbuildOptions(options) {
     // Bake Supabase credentials into the binary at build time.
     // Set CONTXT_SUPABASE_URL and CONTXT_SUPABASE_ANON_KEY before building

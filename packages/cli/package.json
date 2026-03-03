@@ -1,6 +1,6 @@
 {
   "name": "@mycontxt/cli",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "type": "module",
   "bin": {
     "contxt": "./dist/contxt.js"
@@ -22,7 +22,9 @@
     "ora": "^8.1.1",
     "inquirer": "^12.2.0",
     "glob": "^11.0.0",
-    "chokidar": "^4.0.3"
+    "chokidar": "^4.0.3",
+    "better-sqlite3": "^11.7.0",
+    "tiktoken": "^1.0.18"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

@@ -60,6 +60,9 @@ importers:
       '@mycontxt/core':
         specifier: workspace:*
         version: link:../core
+      better-sqlite3:
+        specifier: ^11.7.0
+        version: 11.10.0
       chalk:
         specifier: ^5.4.1
         version: 5.6.2
@@ -78,6 +81,9 @@ importers:
       ora:
         specifier: ^8.1.1
         version: 8.2.0
+      tiktoken:
+        specifier: ^1.0.18
+        version: 1.0.22
     devDependencies:
       '@types/node':
         specifier: ^22.10.5

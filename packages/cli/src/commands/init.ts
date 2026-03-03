@@ -2,8 +2,10 @@
  * Init command - Initialize a Contxt project
  */
 
-import { mkdirSync, existsSync, writeFileSync } from 'fs';
+import { mkdirSync, existsSync, writeFileSync, readFileSync, chmodSync } from 'fs';
 import { basename, join } from 'path';
+import { homedir } from 'os';
+import { spawn } from 'child_process';
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { getContxtDir, getDbPath, isContxtProject } from '../utils/project.js';
 import { success, error, info } from '../utils/output.js';
@@ -53,8 +55,114 @@ contxt review
 \`\`\`
 `;
 
+const MCP_CONFIG = {
+  mcpServers: {
+    contxt: {
+      command: 'contxt',
+      args: ['mcp'],
+      env: {},
+    },
+  },
+};
+
+const CONTXT_BLOCK_START = '# --- contxt hook start ---';
+const CONTXT_BLOCK_END = '# --- contxt hook end ---';
+const ALL_HOOKS = ['post-commit', 'pre-push', 'post-checkout', 'prepare-commit-msg'] as const;
+
 interface InitOptions {
   name?: string;
+}
+
+/**
+ * Write .mcp.json for Claude Code + .cursor/mcp.json for Cursor auto-discovery
+ */
+function writeMcpConfigs(cwd: string): void {
+  const mcpJson = JSON.stringify(MCP_CONFIG, null, 2);
+  writeFileSync(join(cwd, '.mcp.json'), mcpJson, 'utf-8');
+
+  const cursorDir = join(cwd, '.cursor');
+  mkdirSync(cursorDir, { recursive: true });
+  writeFileSync(join(cursorDir, 'mcp.json'), mcpJson, 'utf-8');
+}
+
+/**
+ * Install git hooks silently — same logic as `contxt hook install`
+ */
+function installGitHooks(cwd: string): boolean {
+  const gitDir = join(cwd, '.git');
+  if (!existsSync(gitDir)) return false;
+
+  const gitHooksDir = join(gitDir, 'hooks');
+  mkdirSync(gitHooksDir, { recursive: true });
+
+  for (const hookName of ALL_HOOKS) {
+    const hookPath = join(gitHooksDir, hookName);
+    const contxtBlock = `${CONTXT_BLOCK_START}\ncontxt hook run ${hookName} "$@"\n${CONTXT_BLOCK_END}`;
+
+    if (existsSync(hookPath)) {
+      const content = readFileSync(hookPath, 'utf-8');
+      if (!content.includes(CONTXT_BLOCK_START)) {
+        writeFileSync(hookPath, content.trimEnd() + '\n\n' + contxtBlock + '\n', 'utf-8');
+      }
+    } else {
+      writeFileSync(hookPath, `#!/bin/sh\n\n${contxtBlock}\n`, 'utf-8');
+    }
+
+    chmodSync(hookPath, '755');
+  }
+
+  return true;
+}
+
+/**
+ * Spawn the watch daemon in the background — auto-captures file changes and auto-syncs
+ */
+function startWatchDaemon(cwd: string): void {
+  const pidFile = join(cwd, '.contxt', '.watch.pid');
+  if (existsSync(pidFile)) return; // Already running
+
+  const child = spawn('contxt', ['watch', '--daemon'], {
+    detached: true,
+    stdio: 'ignore',
+    cwd,
+  });
+  child.unref();
+}
+
+/**
+ * Register a UserPromptSubmit hook in ~/.claude/settings.json so context
+ * is automatically injected before every Claude Code prompt.
+ */
+function registerClaudeCodeHook(): void {
+  const claudeDir = join(homedir(), '.claude');
+  const settingsPath = join(claudeDir, 'settings.json');
+  const hookCommand =
+    "bash -c 'PROMPT=$(cat | jq -r \".prompt // empty\" 2>/dev/null | head -c 300); [ -n \"$PROMPT\" ] && contxt load --task \"$PROMPT\" 2>/dev/null || true'";
+
+  let settings: Record<string, any> = {};
+  if (existsSync(settingsPath)) {
+    try {
+      settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+    } catch {
+      // Malformed — start fresh
+    }
+  }
+
+  if (!settings.hooks) settings.hooks = {};
+  if (!settings.hooks.UserPromptSubmit) settings.hooks.UserPromptSubmit = [];
+
+  const alreadyRegistered = (settings.hooks.UserPromptSubmit as any[]).some((h: any) =>
+    h.hooks?.some((hh: any) => typeof hh.command === 'string' && hh.command.includes('contxt load'))
+  );
+
+  if (!alreadyRegistered) {
+    settings.hooks.UserPromptSubmit.push({
+      matcher: '',
+      hooks: [{ type: 'command', command: hookCommand }],
+    });
+    mkdirSync(claudeDir, { recursive: true });
+    writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf-8');
+  }
 }
 
 export async function initCommand(options: InitOptions): Promise<void> {
@@ -85,26 +193,38 @@ export async function initCommand(options: InitOptions): Promise<void> {
     const result = await gate.checkProjectCreate();
     enforceGate(result);
 
-    // Create project
+    // Create project with autoSync enabled by default
     const projectName = options.name || basename(cwd);
     const project = await db.initProject({
       name: projectName,
       path: cwd,
-      stack: [], // TODO: Auto-detect stack
+      stack: [],
+      config: { autoSync: true },
     });
 
-    success(`Initialized Contxt project: ${project.name}`);
-    info(`Project ID: ${project.id}`);
-    info(`Database: ${dbPath}`);
-    info(`CLAUDE.md: ${claudeMdPath}`);
-    console.log();
-    console.log('Get started:');
-    console.log('  contxt decision add -t "..." -r "..."');
-    console.log('  contxt pattern add -t "..." -c "..."');
-    console.log('  contxt hook install');
-    console.log('  contxt status');
-
     await db.close();
+
+    // Generate MCP configs for Claude Code + Cursor auto-discovery
+    writeMcpConfigs(cwd);
+
+    // Install git hooks automatically
+    const hooksInstalled = installGitHooks(cwd);
+
+    // Start watch daemon in background (auto-sync enabled)
+    startWatchDaemon(cwd);
+
+    // Register Claude Code UserPromptSubmit hook for silent context injection
+    registerClaudeCodeHook();
+
+    success(`Initialized Contxt project: ${project.name}`);
+    console.log();
+    info('✓ MCP server configured (.mcp.json + .cursor/mcp.json)');
+    if (hooksInstalled) info('✓ Git hooks installed (post-commit, pre-push, post-checkout)');
+    info('✓ Watch daemon started (auto-sync enabled)');
+    info('✓ Claude Code context hook registered');
+    console.log();
+    console.log("Contxt is running. You won't need to think about it again.");
+
   } catch (err) {
     error(`Failed to initialize project: ${(err as Error).message}`);
     process.exit(1);

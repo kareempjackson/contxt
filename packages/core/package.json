@@ -1,6 +1,6 @@
 {
   "name": "@mycontxt/core",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -8,6 +8,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./engine/usage": {
+      "types": "./dist/engine/usage.d.ts",
+      "import": "./dist/engine/usage.js"
+    },
+    "./engine/plan-resolver": {
+      "types": "./dist/engine/plan-resolver.d.ts",
+      "import": "./dist/engine/plan-resolver.js"
+    },
+    "./plans": {
+      "types": "./dist/plans.d.ts",
+      "import": "./dist/plans.js"
     }
   },
   "files": [
