@@ -496,7 +496,7 @@ export default function Home() {
             </div>
           </FadeUp>
 
-          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[860px] mx-auto">
             {/* Free */}
             <StaggerItem className="bg-white/[0.06] rounded-[20px] p-8">
               <div className="text-xs font-mono uppercase tracking-[2px] text-white/40 mb-4">Free</div>
@@ -572,73 +572,6 @@ export default function Home() {
               </button>
             </StaggerItem>
 
-            {/* Team */}
-            <StaggerItem className="bg-white/[0.06] rounded-[20px] p-8">
-              <div className="text-xs font-mono uppercase tracking-[2px] text-white/40 mb-4">Team</div>
-              <div className="mb-8">
-                <div className="font-serif text-[56px] font-normal leading-none text-white mb-2">$49</div>
-                <div className="text-sm text-white/40">per month</div>
-              </div>
-              <ul className="space-y-3 mb-8 text-sm text-white/70">
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>Everything in Pro</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>Unlimited memory entries</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>Up to 25 seats</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>Team sharing & collaboration</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>Audit log</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>Custom integrations</span>
-                </li>
-              </ul>
-              <button className="w-full h-[52px] px-9 text-[15.5px] font-semibold rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
-                Get started
-              </button>
-            </StaggerItem>
-
-            {/* Enterprise */}
-            <StaggerItem className="bg-white/[0.06] rounded-[20px] p-8">
-              <div className="text-xs font-mono uppercase tracking-[2px] text-white/40 mb-4">Enterprise</div>
-              <div className="mb-8">
-                <div className="font-serif text-[56px] font-normal leading-none text-white mb-2">Custom</div>
-                <div className="text-sm text-white/40">Let's talk</div>
-              </div>
-              <ul className="space-y-3 mb-8 text-sm text-white/70">
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>Everything in Team</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>Unlimited seats</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>SSO & advanced security</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-green/20 text-green flex items-center justify-center text-xs font-bold mt-0.5">✓</span>
-                  <span>Dedicated support</span>
-                </li>
-              </ul>
-              <button className="w-full h-[52px] px-9 text-[15.5px] font-semibold rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
-                Contact sales
-              </button>
-            </StaggerItem>
           </StaggerContainer>
         </div>
       </div>
