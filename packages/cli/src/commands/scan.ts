@@ -6,7 +6,8 @@ import { readFileSync, existsSync } from 'fs';
 import { join, relative } from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { parseFile, scanCommentToEntry, type ScanComment } from '@mycontxt/core';
+import { parseFile, scanCommentToEntry, inferFromMarkdown, type ScanComment } from '@mycontxt/core';
+import type { InferredEntry } from '@mycontxt/core';
 import { getProjectDb } from '../utils/project.js';
 import { glob } from 'glob';
 
@@ -41,6 +42,7 @@ export async function scanCommand(options: ScanOptions = {}) {
       '**/*.rs',
       '**/*.sql',
       '**/*.sh',
+      '**/*.md',
     ];
 
     // Ignore patterns
@@ -75,18 +77,30 @@ export async function scanCommand(options: ScanOptions = {}) {
 
     spinner.text = `Scanning ${files.length} files...`;
 
-    // Parse all files
+    // Parse all files — code files use tag scanning, .md files use AI inference
     const allComments: ScanComment[] = [];
+    const allInferred: InferredEntry[] = [];
+
     for (const file of files) {
+      const relPath = relative(process.cwd(), file);
       const content = readFileSync(file, 'utf-8');
-      const comments = parseFile(content, relative(process.cwd(), file));
-      allComments.push(...comments);
+
+      if (relPath.endsWith('.md')) {
+        // Skip rules.md — managed separately
+        if (relPath === '.contxt/rules.md') continue;
+        const inferred = await inferFromMarkdown(content, relPath);
+        allInferred.push(...inferred);
+      } else {
+        const comments = parseFile(content, relPath);
+        allComments.push(...comments);
+      }
     }
 
-    spinner.succeed(`Found ${allComments.length} tagged comments across ${files.length} files`);
+    const totalFound = allComments.length + allInferred.length;
+    spinner.succeed(`Found ${allComments.length} tagged comments + ${allInferred.length} inferred from markdown across ${files.length} files`);
 
-    if (allComments.length === 0) {
-      console.log(chalk.gray('\nNo tagged comments found. Try adding @decision, @pattern, or @context tags to your code.'));
+    if (totalFound === 0) {
+      console.log(chalk.gray('\nNo decisions or patterns found. Add @decision/@pattern tags to code, or ensure OPENAI_API_KEY is set for markdown inference.'));
       return;
     }
 
@@ -184,7 +198,7 @@ export async function scanCommand(options: ScanOptions = {}) {
       return;
     }
 
-    // Save new and updated entries as drafts
+    // Save new and updated code-scanned entries as drafts
     const toSave = [...newComments, ...updatedComments];
     if (toSave.length > 0) {
       const saveSpinner = ora('Saving entries...').start();
@@ -194,14 +208,12 @@ export async function scanCommand(options: ScanOptions = {}) {
         const existing = existingHashes.get(comment.hash);
 
         if (existing) {
-          // Update existing
           await db.updateEntry(existing.id, {
             title: entry.title,
             content: entry.content,
             metadata: entry.metadata,
           });
         } else {
-          // Create new as draft
           await db.createEntry({
             projectId: project.id,
             type: entry.type,
@@ -217,6 +229,27 @@ export async function scanCommand(options: ScanOptions = {}) {
         options.autoConfirm
           ? `Saved ${toSave.length} entries.`
           : `${toSave.length} new entries saved as drafts.`
+      );
+    }
+
+    // Save new inferred entries from markdown
+    const newInferred = allInferred.filter((e) => !existingHashes.has(e.hash));
+    if (newInferred.length > 0) {
+      const inferSpinner = ora('Saving inferred markdown entries...').start();
+      for (const entry of newInferred) {
+        await db.createEntry({
+          projectId: project.id,
+          type: entry.type,
+          title: entry.title,
+          content: entry.content,
+          metadata: { source: 'md:inferred', file: entry.file, hash: entry.hash },
+          status: options.autoConfirm ? 'active' : 'draft',
+        });
+      }
+      inferSpinner.succeed(
+        options.autoConfirm
+          ? `Saved ${newInferred.length} inferred entries.`
+          : `${newInferred.length} inferred entries saved as drafts.`
       );
     }
 

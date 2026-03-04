@@ -6,7 +6,9 @@ import { mkdirSync, existsSync, writeFileSync, readFileSync, chmodSync } from 'f
 import { basename, join } from 'path';
 import { homedir } from 'os';
 import { spawn } from 'child_process';
+import { glob } from 'glob';
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
+import { inferFromMarkdown } from '@mycontxt/core';
 import { getContxtDir, getDbPath, isContxtProject } from '../utils/project.js';
 import { success, error, info } from '../utils/output.js';
 import { createUsageGate, enforceGate } from '../utils/usage-gate.js';
@@ -202,6 +204,39 @@ export async function initCommand(options: InitOptions): Promise<void> {
       config: { autoSync: true },
     });
 
+    // Scan existing .md files and infer decisions/patterns
+    let mdDrafts = 0;
+    if (process.env.OPENAI_API_KEY) {
+      const mdFiles = await glob('**/*.md', {
+        cwd,
+        ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/.next/**'],
+        absolute: false,
+        nodir: true,
+      });
+
+      const branch = await db.getActiveBranch(project.id);
+
+      for (const file of mdFiles) {
+        try {
+          const content = readFileSync(join(cwd, file), 'utf-8');
+          const inferred = await inferFromMarkdown(content, file);
+          for (const entry of inferred) {
+            await db.createEntry({
+              projectId: project.id,
+              type: entry.type,
+              title: entry.title,
+              content: entry.content,
+              metadata: { source: 'md:inferred', file: entry.file, hash: entry.hash },
+              status: 'draft',
+            });
+            mdDrafts++;
+          }
+        } catch {
+          // Skip files that fail
+        }
+      }
+    }
+
     await db.close();
 
     // Generate MCP configs for Claude Code + Cursor auto-discovery
@@ -222,6 +257,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
     if (hooksInstalled) info('✓ Git hooks installed (post-commit, pre-push, post-checkout)');
     info('✓ Watch daemon started (auto-sync enabled)');
     info('✓ Claude Code context hook registered');
+    if (mdDrafts > 0) info(`✓ ${mdDrafts} decision${mdDrafts !== 1 ? 's' : ''}/pattern${mdDrafts !== 1 ? 's' : ''} inferred from existing markdown files`);
     console.log();
     console.log("Contxt is running. You won't need to think about it again.");
 

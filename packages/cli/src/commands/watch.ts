@@ -7,7 +7,8 @@ import { join, relative } from 'path';
 import { spawn } from 'child_process';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
-import { parseFile, scanCommentToEntry, SyncEngine } from '@mycontxt/core';
+import { glob } from 'glob';
+import { parseFile, scanCommentToEntry, inferFromMarkdown, SyncEngine } from '@mycontxt/core';
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
 import { getProjectDb, getDbPath } from '../utils/project.js';
@@ -146,6 +147,7 @@ async function runWatcher() {
   const watchPatterns = [
     '**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx',
     '**/*.py', '**/*.rb', '**/*.go', '**/*.rs', '**/*.sql',
+    '**/*.md',
   ];
 
   const ignored = [
@@ -182,10 +184,15 @@ async function runWatcher() {
     scheduleFlush();
   });
 
+  // New file added — .md files are processed immediately, others batched
   watcher.on('add', (filePath: string) => {
-    pendingFiles.add(filePath);
-    touchSession();
-    scheduleFlush();
+    if (filePath.endsWith('.md')) {
+      inferMarkdownFile(filePath);
+    } else {
+      pendingFiles.add(filePath);
+      touchSession();
+      scheduleFlush();
+    }
   });
 
   // rules.md changed — auto-sync
@@ -241,6 +248,59 @@ async function runWatcher() {
     }
   });
 
+  // Process a single .md file immediately — no debounce
+  async function inferMarkdownFile(filePath: string) {
+    if (filePath === '.contxt/rules.md') return;
+    try {
+      const absPath = join(cwd, filePath);
+      if (!existsSync(absPath)) return;
+      const content = readFileSync(absPath, 'utf-8');
+      const inferred = await inferFromMarkdown(content, filePath);
+      if (inferred.length === 0) return;
+
+      const existing = await db.listEntries({ projectId: project.id, branch });
+      const hashes = new Set(existing.filter((e) => e.metadata.hash).map((e) => e.metadata.hash));
+      let saved = 0;
+
+      for (const entry of inferred) {
+        if (!hashes.has(entry.hash)) {
+          await db.createEntry({
+            projectId: project.id,
+            type: entry.type,
+            title: entry.title,
+            content: entry.content,
+            metadata: { source: 'md:inferred', file: entry.file, hash: entry.hash },
+            status: 'draft',
+          });
+          saved++;
+        }
+      }
+
+      if (saved > 0) {
+        log('markdown', `${filePath} → +${saved} draft${saved !== 1 ? 's' : ''}`);
+      }
+    } catch {
+      // Ignore errors for individual files
+    }
+  }
+
+  // Initial scan — process all existing .md files on watcher start
+  async function initialMarkdownScan() {
+    const mdFiles = await glob('**/*.md', {
+      cwd,
+      ignore: ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**', '**/.next/**', '.contxt/rules.md'],
+      absolute: false,
+      nodir: true,
+    });
+
+    if (mdFiles.length === 0) return;
+
+    log('markdown', `scanning ${mdFiles.length} existing .md file${mdFiles.length !== 1 ? 's' : ''}...`);
+    for (const file of mdFiles) {
+      await inferMarkdownFile(file);
+    }
+  }
+
   // Flush pending files — update context + scan for tags
   async function flush() {
     if (pendingFiles.size === 0) return;
@@ -262,24 +322,45 @@ async function runWatcher() {
       // Ignore
     }
 
-    // Incremental scan — check each changed file for tags
+    // Incremental scan — check each changed file for tags or infer from markdown
     let newDrafts = 0;
+    const existing = await db.listEntries({ projectId: project.id, branch });
+    const hashes = new Set(existing.filter((e) => e.metadata.hash).map((e) => e.metadata.hash));
+
     for (const file of files) {
       try {
         const absPath = join(cwd, file);
         if (!existsSync(absPath)) continue;
         const content = readFileSync(absPath, 'utf-8');
-        const comments = parseFile(content, file);
-        if (comments.length === 0) continue;
 
-        const existing = await db.listEntries({ projectId: project.id, branch });
-        const hashes = new Set(existing.filter((e) => e.metadata.hash).map((e) => e.metadata.hash));
+        if (file.endsWith('.md')) {
+          // Skip rules.md — handled by rulesWatcher
+          if (file === '.contxt/rules.md' || file.endsWith('/.contxt/rules.md')) continue;
 
-        for (const comment of comments) {
-          if (!hashes.has(comment.hash)) {
-            const entry = scanCommentToEntry(comment, project.id);
-            await db.createEntry({ projectId: project.id, type: entry.type, title: entry.title, content: entry.content, metadata: entry.metadata, status: 'draft' });
-            newDrafts++;
+          const inferred = await inferFromMarkdown(content, file);
+          for (const entry of inferred) {
+            if (!hashes.has(entry.hash)) {
+              await db.createEntry({
+                projectId: project.id,
+                type: entry.type,
+                title: entry.title,
+                content: entry.content,
+                metadata: { source: 'md:inferred', file: entry.file, hash: entry.hash },
+                status: 'draft',
+              });
+              hashes.add(entry.hash);
+              newDrafts++;
+            }
+          }
+        } else {
+          const comments = parseFile(content, file);
+          for (const comment of comments) {
+            if (!hashes.has(comment.hash)) {
+              const entry = scanCommentToEntry(comment, project.id);
+              await db.createEntry({ projectId: project.id, type: entry.type, title: entry.title, content: entry.content, metadata: entry.metadata, status: 'draft' });
+              hashes.add(comment.hash);
+              newDrafts++;
+            }
           }
         }
       } catch {
@@ -373,6 +454,11 @@ async function runWatcher() {
   if (!isDaemon) {
     console.log(chalk.gray('Watching for file changes. Ctrl+C to stop.\n'));
   }
+
+  // Scan existing .md files once the watcher is ready
+  watcher.on('ready', () => {
+    initialMarkdownScan();
+  });
 }
 
 export const watchCommand = {
