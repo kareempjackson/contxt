@@ -21,6 +21,11 @@ export async function resolveUserPlan(
   remoteDb: IRemoteDatabase | null,
   userId: string | null,
 ): Promise<PlanId> {
+  // Local dev override — set CONTXT_PLAN=pro to bypass billing gates
+  if (process.env.CONTXT_PLAN) {
+    return process.env.CONTXT_PLAN as PlanId;
+  }
+
   // Not authenticated = free plan
   if (!userId) return "free";
 

@@ -1,50 +1,56 @@
-# MemoCore
+# Contxt
 
 **GitHub for AI Context** — Persistent, versioned, project-scoped memory for AI coding agents.
 
-MemoCore solves the problem that every AI-assisted development session starts from zero. Instead of wasting ~40% of your prompts re-explaining architecture and conventions, MemoCore intelligently surfaces only what's relevant to your current task.
+Contxt solves the problem that every AI-assisted development session starts from zero. Instead of wasting ~40% of your prompts re-explaining architecture and conventions, Contxt intelligently surfaces only what's relevant to your current task.
 
-## Why MemoCore?
+## Why Contxt?
 
-- **🧠 Smart Context Retrieval**: AI agents automatically load relevant decisions, patterns, and context
-- **🔄 Version Control**: Git-like branching and time travel for your project memory
-- **☁️ Cloud Sync**: Supabase-powered sync across machines and teams
-- **🔍 Semantic Search**: pgvector-powered similarity search finds what you need
-- **🚀 MCP Integration**: Works seamlessly with Claude Code and other AI agents
-- **📦 Offline-First**: SQLite local storage, works without internet
+- **Smart Context Retrieval**: AI agents automatically load relevant decisions, patterns, and context
+- **Version Control**: Git-like branching and time travel for your project memory
+- **Cloud Sync**: Supabase-powered sync across machines and teams
+- **Semantic Search**: pgvector-powered similarity search finds what you need
+- **MCP Integration**: Works seamlessly with Claude Code and Cursor — zero configuration
+- **Offline-First**: SQLite local storage, works without internet
 
 ## Quickstart (5 minutes)
 
 ### Install
 
 ```bash
-npm install -g @memocore/cli
+npm install -g @mycontxt/cli
 ```
 
 ### Initialize Project
 
 ```bash
 cd your-project
-memocore init
+contxt init
 ```
+
+This sets up:
+- `.contxt/` directory with a local SQLite database
+- `.mcp.json` + `.cursor/mcp.json` for Claude Code / Cursor auto-discovery
+- Git hooks for automatic context capture on commit
+- Claude Code context injection hook (silently injects context before every prompt)
 
 ### Add Project Memory
 
 ```bash
 # Log architectural decisions
-memocore decision add \
+contxt decision add \
   --title "Use PostgreSQL for main database" \
   --rationale "Need ACID guarantees and relational queries" \
   --alternatives "MongoDB" "DynamoDB"
 
 # Save code patterns
-memocore pattern add \
+contxt pattern add \
   --title "API Error Handler" \
   --content "Always return { error: string, code: number, details?: any }" \
   --category "API"
 
 # Track current context
-memocore context set \
+contxt context set \
   --feature "Payment integration" \
   --blockers "Need to verify Stripe webhook signatures" \
   --next "Research webhook validation" "Set up test webhooks"
@@ -54,31 +60,28 @@ memocore context set \
 
 ```bash
 # Task-based (smart relevance ranking)
-memocore load --task "implement Stripe webhooks"
+contxt load --task "implement Stripe webhooks"
 
 # File-based
-memocore load --files "src/payments/**"
+contxt load --files "src/payments/**"
 
 # Everything
-memocore load --all --max-tokens 2000
+contxt load --all --max-tokens 2000
 ```
 
-### MCP Integration (Auto-Context for AI Agents)
+### Review Captured Drafts
+
+Contxt auto-captures decisions and patterns during your AI sessions. Review and confirm them:
 
 ```bash
-# Install MCP server for Claude Code
-memocore mcp install
-
-# Restart Claude Code
-# Now when you ask "Help me implement Stripe webhooks"
-# Claude automatically loads relevant decisions, patterns, and context!
+contxt review
 ```
 
 ## Core Concepts
 
 ### Memory Types
 
-1. **Decisions**: Architectural choices with rationale and alternatives
+1. **Decisions**: Architectural choices with rationale and alternatives considered
 2. **Patterns**: Code conventions, templates, and best practices
 3. **Context**: Current working context (feature, blockers, next steps)
 4. **Documents**: Reference materials, API docs, onboarding guides
@@ -90,16 +93,16 @@ Experiment with different approaches without polluting your main memory:
 
 ```bash
 # Create experimental branch
-memocore branch create experiment/new-approach
+contxt branch create experiment/new-approach
 
 # Try something different
-memocore decision add --title "Try MongoDB instead" --rationale "..."
+contxt decision add --title "Try MongoDB instead" --rationale "..."
 
 # Switch back to main
-memocore branch switch main
+contxt branch switch main
 
 # Merge if it worked out
-memocore branch merge experiment/new-approach
+contxt branch merge experiment/new-approach
 ```
 
 ### Versioning (Time Travel)
@@ -108,26 +111,26 @@ Every change is versioned automatically:
 
 ```bash
 # View history
-memocore history show <entry-id>
+contxt history show <entry-id>
 
 # Restore previous version
-memocore history restore <entry-id> --version 2
+contxt history restore <entry-id> --version 2
 ```
 
 ### Cloud Sync
 
 ```bash
 # Authenticate
-memocore auth login
+contxt auth login
 
 # Push local changes
-memocore push
+contxt push
 
 # Pull remote changes
-memocore pull
+contxt pull
 
 # Full bidirectional sync
-memocore sync
+contxt sync
 ```
 
 ## Command Reference
@@ -135,146 +138,139 @@ memocore sync
 ### Project Management
 
 ```bash
-memocore init [--name <name>]          # Initialize project
-memocore status                         # Show project status
+contxt init [--name <name>]          # Initialize project
+contxt status                         # Show project status
 ```
 
 ### Memory Management
 
 ```bash
 # Decisions
-memocore decision add --title <title> --rationale <rationale>
-memocore decision list
-memocore decision show <id>
+contxt decision add --title <title> --rationale <rationale>
+contxt decision list
+contxt decision show <id>
 
 # Patterns
-memocore pattern add --title <title> --content <content>
-memocore pattern list
-memocore pattern show <id>
+contxt pattern add --title <title> --content <content>
+contxt pattern list
+contxt pattern show <id>
 
 # Context
-memocore context set --feature <feature> --blockers <blockers...>
-memocore context show
-memocore context clear
+contxt context set --feature <feature> --blockers <blockers...>
+contxt context show
+contxt context clear
 
 # Documents
-memocore doc add --title <title> --content <content>
-memocore doc add --title <title> --file <path>  # From file
-memocore doc list
-memocore doc show <id>
+contxt doc add --title <title> --content <content>
+contxt doc add --title <title> --file <path>  # From file
+contxt doc list
+contxt doc show <id>
 
 # Sessions
-memocore session start --feature <feature>
-memocore session end [--summary <summary>]
-memocore session list
-memocore session current
+contxt session start --feature <feature>
+contxt session end [--summary <summary>]
+contxt session list
+contxt session current
 ```
 
 ### Search & Retrieval
 
 ```bash
-memocore search <query>                 # Full-text search
-memocore load --task <description>      # Smart context loading
-memocore load --files <files...>        # File-based context
-memocore load --all --max-tokens <n>    # All context
-memocore load --summary                 # Context summary
+contxt search <query>                 # Full-text search
+contxt load --task <description>      # Smart context loading
+contxt load --files <files...>        # File-based context
+contxt load --all --max-tokens <n>    # All context
+contxt load --summary                 # Context summary
+```
+
+### Capture & Review
+
+```bash
+contxt capture                        # Manually trigger a capture
+contxt scan                           # Scan project for patterns
+contxt review                         # Review and confirm captured drafts
 ```
 
 ### Branching
 
 ```bash
-memocore branch create <name> [--from <branch>]
-memocore branch list
-memocore branch switch <name>
-memocore branch delete <name>
-memocore branch merge <source>
+contxt branch create <name> [--from <branch>]
+contxt branch list
+contxt branch switch <name>
+contxt branch delete <name>
+contxt branch merge <source>
 ```
 
 ### Version History
 
 ```bash
-memocore history show <entry-id>
-memocore history restore <entry-id> --version <n>
+contxt history show <entry-id>
+contxt history restore <entry-id> --version <n>
 ```
 
-### Cloud Sync
+### Cloud Sync & Auth
 
 ```bash
-memocore auth login [--email <email>]   # GitHub OAuth or magic link
-memocore auth logout
-memocore auth status
+contxt auth login [--email <email>]   # GitHub OAuth or magic link
+contxt auth logout
+contxt auth status
 
-memocore push [--force] [--dry-run]
-memocore pull [--force] [--dry-run]
-memocore sync [--force] [--dry-run]
+contxt push [--force] [--dry-run]
+contxt pull [--force] [--dry-run]
+contxt sync [--force] [--dry-run]
 ```
 
-### Export/Import
+### Export / Import
 
 ```bash
-memocore export [--output <file>] [--branch <branch>]
-memocore import --file <file> [--merge]
+contxt export [--output <file>] [--branch <branch>]
+contxt import --file <file> [--merge]
 ```
 
 ## MCP Integration
 
-MemoCore exposes 8 tools to AI agents via Model Context Protocol:
+Contxt exposes 6 tools to AI agents via the Model Context Protocol. These are automatically configured when you run `contxt init`.
 
-1. **suggest_context** - Smart context retrieval (primary tool)
-2. **get_project_context** - Project overview
-3. **get_decisions** - List decisions
-4. **get_patterns** - List patterns
-5. **search_memory** - Full-text search
-6. **log_decision** - Create decision
-7. **update_context** - Update working context
-8. **save_pattern** - Save pattern
+| Tool | Description |
+|---|---|
+| `contxt_auto_capture_decision` | Capture an architectural decision |
+| `contxt_auto_capture_pattern` | Capture a reusable code pattern |
+| `contxt_capture_discussion` | Capture a decision with full discussion context |
+| `contxt_update_session` | Update the current session summary |
+| `contxt_get_drafts` | List all pending draft captures for review |
+| `contxt_confirm_draft` | Confirm and promote a draft to memory |
 
-### Configuration
+### How It Works
 
-MemoCore is configured in `~/.claude/claude_desktop_config.json`:
+`contxt init` writes `.mcp.json` to your project root, which Claude Code and Cursor pick up automatically:
 
 ```json
 {
   "mcpServers": {
-    "memocore": {
-      "command": "node",
-      "args": ["/path/to/memocore/packages/mcp/dist/server.js"]
+    "contxt": {
+      "command": "contxt",
+      "args": ["mcp"]
     }
   }
 }
 ```
 
-### Example Usage
-
-When you ask Claude Code: "Help me implement payment webhooks"
-
-Claude automatically calls `suggest_context` with:
-- Task description: "implement payment webhooks"
-- Active files: Current editor files
-- Token budget: 4000 tokens
-
-It receives:
-- Relevant decisions (e.g., "Use Stripe for payments")
-- Code patterns (e.g., "API error handling")
-- Current context (e.g., "Working on payment integration")
-- File paths and next steps
-
-This enables Claude to provide contextually-aware answers without you manually copying/pasting context!
+When you ask Claude Code: "Help me implement payment webhooks" — Claude automatically calls `contxt_auto_capture_decision` and receives relevant decisions, patterns, and context without you doing anything.
 
 ## Architecture
 
 ```
-memocore/
+contxt/
 ├── packages/
 │   ├── core/           # Business logic (infrastructure-agnostic)
 │   ├── adapters/       # SQLite & Supabase implementations
-│   ├── cli/            # Command-line interface
-│   └── mcp/            # MCP server for AI agents
+│   ├── cli/            # Command-line interface (`contxt` binary)
+│   ├── mcp/            # MCP server for AI agents
+│   └── web/            # Dashboard UI (Next.js)
 ├── supabase/
 │   ├── migrations/     # Database schema
 │   └── functions/      # Edge Functions (embeddings)
-└── .memocore/          # Created in user projects
-    ├── config.json
+└── .contxt/            # Created in user projects
     └── local.db        # SQLite database
 ```
 
@@ -282,8 +278,8 @@ memocore/
 
 1. **Offline-First**: SQLite is source of truth, Supabase syncs later
 2. **Infrastructure-Agnostic**: Core logic behind interfaces
-3. **Adapter Pattern**: Swap Supabase for AWS/GCP without changing business logic
-4. **Clean Boundaries**: Each package has single responsibility
+3. **Adapter Pattern**: Swap Supabase for any backend without changing business logic
+4. **Zero Config**: `contxt init` handles all editor/agent setup automatically
 
 ## Configuration
 
@@ -291,55 +287,19 @@ memocore/
 
 ```bash
 # Supabase (required for cloud sync)
-MEMOCORE_SUPABASE_URL=https://your-project.supabase.co
-MEMOCORE_SUPABASE_ANON_KEY=your-anon-key
+CONTXT_SUPABASE_URL=https://your-project.supabase.co
+CONTXT_SUPABASE_ANON_KEY=your-anon-key
 
 # OpenAI (required for semantic search)
 OPENAI_API_KEY=sk-...
+
+# Local dev: bypass billing gates (never use in production)
+CONTXT_PLAN=pro
 ```
 
 ### Project Config
 
-`.memocore/config.json`:
-
-```json
-{
-  "version": "0.1.0",
-  "project": {
-    "name": "my-project",
-    "stack": ["typescript", "react", "postgresql"]
-  },
-  "sync": {
-    "enabled": true,
-    "autoPush": false
-  }
-}
-```
-
-## Deployment
-
-### Supabase Setup
-
-1. Create Supabase project
-2. Run migrations:
-   ```bash
-   supabase migration up
-   ```
-3. Enable pgvector extension
-4. Deploy Edge Function:
-   ```bash
-   supabase functions deploy embed --no-verify-jwt
-   ```
-5. Set environment variables in Supabase dashboard
-
-### Self-Hosting
-
-MemoCore can run entirely self-hosted:
-
-1. Deploy PostgreSQL with pgvector
-2. Run migrations from `supabase/migrations/`
-3. Deploy embedding function (Deno Deploy, AWS Lambda, etc.)
-4. Update adapter to point to your infrastructure
+`.contxt/` is created in your project root on `contxt init`. Per-project config is stored in the local SQLite database.
 
 ## Development
 
@@ -357,48 +317,43 @@ pnpm test
 pnpm dev
 ```
 
-### Testing
+### Local Dev Without Billing Gates
+
+Set `CONTXT_PLAN=pro` to bypass plan enforcement locally:
 
 ```bash
-# Unit tests
-pnpm test
-
-# Integration tests (requires Supabase)
-SUPABASE_URL=... SUPABASE_ANON_KEY=... pnpm test:integration
-
-# MCP server test
-cd test-project
-echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node ../packages/mcp/dist/server.js
+CONTXT_PLAN=pro contxt init
 ```
 
-## Roadmap
+Or add it to your `.env` file (never commit to production).
 
-### v1.1 (Month 2-3)
-- [ ] Team collaboration (organizations)
-- [ ] Web dashboard for viewing/editing memory
-- [ ] Real-time sync (not just manual push/pull)
-- [ ] Advanced conflict resolution UI
+### Testing the MCP Server
 
-### v2.0 (Month 4+)
-- [ ] Self-hosted Docker deployment
-- [ ] Plugin system for custom memory types
-- [ ] VS Code extension (inline context)
-- [ ] Mobile app for on-the-go context
+```bash
+cd test-project
+echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | contxt mcp
+```
 
-## Contributing
+### Supabase Setup
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
+1. Create a Supabase project
+2. Run migrations:
+   ```bash
+   supabase migration up
+   ```
+3. Enable the `pgvector` extension
+4. Deploy the embedding Edge Function:
+   ```bash
+   supabase functions deploy embed --no-verify-jwt
+   ```
+5. Set environment variables in your Supabase dashboard
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/memocore/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/memocore/discussions)
-- **Email**: support@memocore.dev
+- **Issues**: [GitHub Issues](https://github.com/ghostsavvy/contxt/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/ghostsavvy/contxt/discussions)
+- **Email**: support@mycontxt.co
 
 ---
 
-**Built with ❤️ for developers who are tired of re-explaining their codebase to AI agents.**
+**Built for developers who are tired of re-explaining their codebase to AI agents.**
