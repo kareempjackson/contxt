@@ -18,9 +18,10 @@ async function getSettingsData(stripeSessionId?: string) {
     accessToken: session?.access_token,
   });
 
-  const [profile, subResult] = await Promise.all([
+  const [profile, subResult, prefResult] = await Promise.all([
     db.getUserProfile(user.id).catch(() => null),
     supabase.from('subscriptions').select('plan_id, status').eq('user_id', user.id).single(),
+    supabase.from('user_profiles').select('metadata').eq('id', user.id).single(),
   ]);
 
   const sub = subResult.data;
@@ -66,19 +67,21 @@ async function getSettingsData(stripeSessionId?: string) {
 
   return {
     user: {
+      id: user.id,
       name: (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'User',
       email: user.email ?? '',
     },
     planId,
     planName: plan.name,
     planPrice: plan.pricing.monthly,
+    preferences: (prefResult.data?.metadata ?? {}) as Record<string, unknown>,
   };
 }
 
 export default async function DashboardSettings({ searchParams }: { searchParams: Promise<{ upgraded?: string; session_id?: string }> }) {
   const params = await searchParams;
   const justUpgraded = params.upgraded === 'true';
-  const { user, planId, planName, planPrice } = await getSettingsData(justUpgraded ? params.session_id : undefined);
+  const { user, planId, planName, planPrice, preferences } = await getSettingsData(justUpgraded ? params.session_id : undefined);
 
   return (
     <SettingsClient
@@ -87,6 +90,7 @@ export default async function DashboardSettings({ searchParams }: { searchParams
       planName={planName}
       planPrice={planPrice}
       justUpgraded={justUpgraded}
+      preferences={preferences}
     />
   );
 }

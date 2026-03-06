@@ -1,31 +1,47 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/client';
 
 interface SettingsClientProps {
-  user: { name: string; email: string };
+  user: { id: string; name: string; email: string };
   planId: string;
   planName: string;
   planPrice: number | null;
   justUpgraded: boolean;
+  preferences: Record<string, unknown>;
 }
 
-export function SettingsClient({ user, planId, planName, planPrice, justUpgraded }: SettingsClientProps) {
+export function SettingsClient({ user, planId, planName, planPrice, justUpgraded, preferences }: SettingsClientProps) {
+  const router = useRouter();
   const [name, setName] = useState(user.name);
-  const [autoSync, setAutoSync] = useState(true);
-  const [notifications, setNotifications] = useState(true);
+  const [autoSync, setAutoSync] = useState((preferences.autoSync as boolean) ?? true);
+  const [notifications, setNotifications] = useState((preferences.notifications as boolean) ?? true);
+  const [defaultBranch, setDefaultBranch] = useState((preferences.defaultBranch as string) ?? 'main');
+  const [tokenBudget, setTokenBudget] = useState((preferences.tokenBudget as number) ?? 4000);
+  const [syncInterval, setSyncInterval] = useState((preferences.syncInterval as string) ?? '5');
+
   const [billingLoading, setBillingLoading] = useState(false);
   const [billingError, setBillingError] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function handleSave() {
     setSaving(true);
     setSaveSuccess(false);
     try {
       const supabase = createClient();
-      await supabase.auth.updateUser({ data: { full_name: name.trim() } });
+      await Promise.all([
+        supabase.auth.updateUser({ data: { full_name: name.trim() } }),
+        supabase.from('user_profiles').update({
+          metadata: { autoSync, notifications, defaultBranch, tokenBudget: Number(tokenBudget), syncInterval },
+        }).eq('id', user.id),
+      ]);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2500);
     } finally {
@@ -63,6 +79,45 @@ export function SettingsClient({ user, planId, planName, planPrice, justUpgraded
       setBillingError('Could not open billing portal. Please try again.');
     } finally {
       setBillingLoading(false);
+    }
+  }
+
+  async function handleSync() {
+    setSyncing(true);
+    router.refresh();
+    setTimeout(() => setSyncing(false), 1500);
+  }
+
+  async function handleExport() {
+    setExportLoading(true);
+    try {
+      const res = await fetch('/api/user/export');
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'contxt-export.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setExportLoading(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteConfirm) {
+      setDeleteConfirm(true);
+      return;
+    }
+    setDeleting(true);
+    try {
+      await fetch('/api/user/delete', { method: 'POST' });
+      window.location.href = '/';
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -188,17 +243,22 @@ export function SettingsClient({ user, planId, planName, planPrice, justUpgraded
             </div>
             <div>
               <label className="block text-[13px] font-semibold text-text-1 mb-2">Default branch</label>
-              <select className="w-full h-10 px-3.5 text-[13px] text-text-0 bg-bg border border-border rounded-[9px] outline-none transition-all focus:border-blue/30 focus:shadow-[0_0_0_3px_rgba(10,132,255,0.07)]">
-                <option>main</option>
-                <option>develop</option>
-                <option>staging</option>
+              <select
+                value={defaultBranch}
+                onChange={(e) => setDefaultBranch(e.target.value)}
+                className="w-full h-10 px-3.5 text-[13px] text-text-0 bg-bg border border-border rounded-[9px] outline-none transition-all focus:border-blue/30 focus:shadow-[0_0_0_3px_rgba(10,132,255,0.07)]"
+              >
+                <option value="main">main</option>
+                <option value="develop">develop</option>
+                <option value="staging">staging</option>
               </select>
             </div>
             <div>
               <label className="block text-[13px] font-semibold text-text-1 mb-2">Token budget (per query)</label>
               <input
                 type="number"
-                defaultValue="4000"
+                value={tokenBudget}
+                onChange={(e) => setTokenBudget(Number(e.target.value))}
                 className="w-full h-10 px-3.5 text-[13px] text-text-0 bg-bg border border-border rounded-[9px] outline-none transition-all focus:border-blue/30 focus:shadow-[0_0_0_3px_rgba(10,132,255,0.07)]"
               />
               <div className="text-[11.5px] text-text-3 mt-1.5">Maximum tokens to load per context query</div>
@@ -219,20 +279,28 @@ export function SettingsClient({ user, planId, planName, planPrice, justUpgraded
                 </div>
                 <div>
                   <div className="text-[13.5px] font-semibold text-text-0">All synced</div>
-                  <div className="text-[12px] text-text-2">Last sync: 2 minutes ago</div>
+                  <div className="text-[12px] text-text-2">Data refreshed from cloud</div>
                 </div>
               </div>
-              <button className="h-8 px-3.5 text-[12.5px] font-semibold text-text-1 bg-white rounded-[9px] border border-border hover:shadow-[0_4px_24px_rgba(0,0,0,0.05)] transition-all">
-                Sync now
+              <button
+                onClick={handleSync}
+                disabled={syncing}
+                className="h-8 px-3.5 text-[12.5px] font-semibold text-text-1 bg-white rounded-[9px] border border-border hover:shadow-[0_4px_24px_rgba(0,0,0,0.05)] transition-all disabled:opacity-50"
+              >
+                {syncing ? 'Syncing…' : 'Sync now'}
               </button>
             </div>
             <div>
               <label className="block text-[13px] font-semibold text-text-1 mb-2">Sync interval</label>
-              <select className="w-full h-10 px-3.5 text-[13px] text-text-0 bg-bg border border-border rounded-[9px] outline-none transition-all focus:border-blue/30 focus:shadow-[0_0_0_3px_rgba(10,132,255,0.07)]">
-                <option>Every 5 minutes</option>
-                <option>Every 15 minutes</option>
-                <option>Every 30 minutes</option>
-                <option>Manual only</option>
+              <select
+                value={syncInterval}
+                onChange={(e) => setSyncInterval(e.target.value)}
+                className="w-full h-10 px-3.5 text-[13px] text-text-0 bg-bg border border-border rounded-[9px] outline-none transition-all focus:border-blue/30 focus:shadow-[0_0_0_3px_rgba(10,132,255,0.07)]"
+              >
+                <option value="5">Every 5 minutes</option>
+                <option value="15">Every 15 minutes</option>
+                <option value="30">Every 30 minutes</option>
+                <option value="manual">Manual only</option>
               </select>
             </div>
           </div>
@@ -245,20 +313,42 @@ export function SettingsClient({ user, planId, planName, planPrice, justUpgraded
             <div className="flex items-center justify-between p-3.5 bg-rose-soft rounded-[10px]">
               <div>
                 <div className="text-[13.5px] font-semibold text-text-0 mb-0.5">Export all data</div>
-                <div className="text-[12px] text-text-2">Download all projects and entries</div>
+                <div className="text-[12px] text-text-2">Download all projects and entries as JSON</div>
               </div>
-              <button className="h-8 px-3.5 text-[12.5px] font-semibold text-text-1 bg-white rounded-[9px] border border-border hover:shadow-[0_4px_24px_rgba(0,0,0,0.05)] transition-all">
-                Export
+              <button
+                onClick={handleExport}
+                disabled={exportLoading}
+                className="h-8 px-3.5 text-[12.5px] font-semibold text-text-1 bg-white rounded-[9px] border border-border hover:shadow-[0_4px_24px_rgba(0,0,0,0.05)] transition-all disabled:opacity-50"
+              >
+                {exportLoading ? 'Exporting…' : 'Export'}
               </button>
             </div>
             <div className="flex items-center justify-between p-3.5 bg-rose-soft rounded-[10px]">
               <div>
                 <div className="text-[13.5px] font-semibold text-rose mb-0.5">Delete account</div>
-                <div className="text-[12px] text-text-2">Permanently delete your account and all data</div>
+                <div className="text-[12px] text-text-2">
+                  {deleteConfirm
+                    ? 'This cannot be undone. Click confirm to permanently delete.'
+                    : 'Permanently delete your account and all data'}
+                </div>
               </div>
-              <button className="h-8 px-3.5 text-[12.5px] font-semibold text-white bg-rose rounded-[9px] hover:bg-[#C91840] transition-all">
-                Delete
-              </button>
+              <div className="flex items-center gap-2">
+                {deleteConfirm && (
+                  <button
+                    onClick={() => setDeleteConfirm(false)}
+                    className="h-8 px-3.5 text-[12.5px] font-semibold text-text-2 bg-white rounded-[9px] border border-border hover:shadow-[0_4px_24px_rgba(0,0,0,0.05)] transition-all"
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="h-8 px-3.5 text-[12.5px] font-semibold text-white bg-rose rounded-[9px] hover:bg-[#C91840] transition-all disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting…' : deleteConfirm ? 'Confirm delete' : 'Delete'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

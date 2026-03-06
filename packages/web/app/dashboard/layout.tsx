@@ -30,11 +30,16 @@ async function getLayoutData() {
   const planId = subPlan || (profile?.plan_id as PlanId) || 'free';
   const plan = getPlan(planId);
 
-  return { user, projects, draftCount: drafts.length, planId, plan };
+  const projectIds = projects.map((p: { id: string }) => p.id);
+  const { count: entryCount } = projectIds.length > 0
+    ? await supabase.from('memory_entries').select('id', { count: 'exact', head: true }).in('project_id', projectIds)
+    : { count: 0 };
+
+  return { user, projects, draftCount: drafts.length, planId, plan, entryCount: entryCount ?? 0 };
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, projects, draftCount, planId, plan } = await getLayoutData();
+  const { user, projects, draftCount, planId, plan, entryCount } = await getLayoutData();
 
   const displayName = (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'User';
   const initials = displayName[0]?.toUpperCase() ?? 'U';
@@ -50,6 +55,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         planName={plan.name}
         maxProjects={plan.limits.maxProjects}
         maxEntries={plan.limits.maxTotalEntries}
+        entryCount={entryCount}
       />
 
       {/* Main Content */}

@@ -22,9 +22,10 @@ interface DashboardSidebarProps {
   planName: string;
   maxProjects: number | null;
   maxEntries: number | null;
+  entryCount: number;
 }
 
-export function DashboardSidebar({ projects, draftCount, user, planId, planName, maxProjects, maxEntries }: DashboardSidebarProps) {
+export function DashboardSidebar({ projects, draftCount, user, planId, planName, maxProjects, maxEntries, entryCount }: DashboardSidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -180,6 +181,22 @@ export function DashboardSidebar({ projects, draftCount, user, planId, planName,
                 />
               </div>
             </div>
+            {maxEntries !== null && (
+              <div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-[11.5px] font-medium text-text-2">Entries</span>
+                  <span className="font-mono text-[10.5px] font-medium text-text-1">
+                    {entryCount.toLocaleString()} / {maxEntries.toLocaleString()}
+                  </span>
+                </div>
+                <div className="h-[3px] bg-black/[0.04] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue rounded-full"
+                    style={{ width: `${Math.min((entryCount / maxEntries) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
           {planId === 'free' && (
             <a
