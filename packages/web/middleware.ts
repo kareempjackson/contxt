@@ -13,6 +13,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Protect /onboarding — must be authenticated
+  if (pathname === '/onboarding' && !user) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/auth/login';
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Already-onboarded users visiting /onboarding go to dashboard
+  if (pathname === '/onboarding' && user?.user_metadata?.onboarded === true) {
+    const dashboardUrl = request.nextUrl.clone();
+    dashboardUrl.pathname = '/dashboard';
+    return NextResponse.redirect(dashboardUrl);
+  }
+
   // Redirect already-authenticated users away from /auth/login and /auth/signup
   if ((pathname === '/auth/login' || pathname === '/auth/signup') && user) {
     const dashboardUrl = request.nextUrl.clone();

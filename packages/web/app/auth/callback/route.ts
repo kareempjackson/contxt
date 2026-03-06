@@ -8,8 +8,13 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && data.user) {
+      // New users (no onboarded flag) go through onboarding
+      const isOnboarded = data.user.user_metadata?.onboarded === true;
+      if (!isOnboarded) {
+        return NextResponse.redirect(`${origin}/onboarding`);
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

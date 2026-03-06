@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '../../lib/supabase/server';
 import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
+import { getPlan, type PlanId } from '@mycontxt/core/plans';
 import { DashboardSidebar } from './sidebar';
 import { RealtimeSync } from './realtime-sync';
 import { UserDropdown } from './user-dropdown';
@@ -17,16 +18,20 @@ async function getLayoutData() {
     accessToken: session?.access_token,
   });
 
-  const [projects, drafts] = await Promise.all([
+  const [projects, drafts, profile] = await Promise.all([
     db.getProjects(user.id).catch(() => []),
     db.getDrafts(user.id).catch(() => []),
+    db.getUserProfile(user.id).catch(() => null),
   ]);
 
-  return { user, projects, draftCount: drafts.length };
+  const planId = (profile?.plan_id as PlanId) || 'free';
+  const plan = getPlan(planId);
+
+  return { user, projects, draftCount: drafts.length, planId, plan };
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, projects, draftCount } = await getLayoutData();
+  const { user, projects, draftCount, planId, plan } = await getLayoutData();
 
   const displayName = (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'User';
   const initials = displayName[0]?.toUpperCase() ?? 'U';
@@ -38,6 +43,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         projects={projects}
         draftCount={draftCount}
         user={{ name: displayName, email: user.email ?? '', initials }}
+        planId={planId}
+        planName={plan.name}
+        maxProjects={plan.limits.maxProjects}
+        maxEntries={plan.limits.maxTotalEntries}
       />
 
       {/* Main Content */}

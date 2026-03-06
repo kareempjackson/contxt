@@ -63,6 +63,26 @@ enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
 
+[auth.email.template.confirmation]
+subject = "Confirm your contxt account"
+content_path = "./supabase/templates/confirm.html"
+
+[auth.email.template.recovery]
+subject = "Reset your contxt password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.magic_link]
+subject = "Your contxt sign-in link"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new email — contxt"
+content_path = "./supabase/templates/email_change.html"
+
+[auth.email.template.invite]
+subject = "You've been invited to contxt"
+content_path = "./supabase/templates/invite.html"
+
 [auth.sms]
 enable_signup = false
 

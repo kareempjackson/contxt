@@ -18,9 +18,13 @@ interface DashboardSidebarProps {
   projects: Project[];
   draftCount: number;
   user: SidebarUser;
+  planId: string;
+  planName: string;
+  maxProjects: number | null;
+  maxEntries: number | null;
 }
 
-export function DashboardSidebar({ projects, draftCount, user }: DashboardSidebarProps) {
+export function DashboardSidebar({ projects, draftCount, user, planId, planName, maxProjects, maxEntries }: DashboardSidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -43,9 +47,11 @@ export function DashboardSidebar({ projects, draftCount, user }: DashboardSideba
         {/* Header */}
         <div className="h-14 flex items-center gap-2.5 px-4 mb-1">
           <span className="font-bold text-[15px] tracking-tight text-text-0">contxt</span>
-          <span className="font-mono text-[9px] font-semibold uppercase tracking-wide px-[7px] py-[3px] rounded-full bg-bg-dark text-text-inv">
-            Pro
-          </span>
+          {planId !== 'free' && (
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-wide px-[7px] py-[3px] rounded-full bg-bg-dark text-text-inv">
+              {planName}
+            </span>
+          )}
         </div>
 
         {/* Search */}
@@ -163,13 +169,26 @@ export function DashboardSidebar({ projects, draftCount, user }: DashboardSideba
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-[11.5px] font-medium text-text-2">Projects</span>
-                <span className="font-mono text-[10.5px] font-medium text-text-1">{projects.length} / ∞</span>
+                <span className="font-mono text-[10.5px] font-medium text-text-1">
+                  {projects.length} / {maxProjects === null ? '∞' : maxProjects}
+                </span>
               </div>
               <div className="h-[3px] bg-black/[0.04] rounded-full overflow-hidden">
-                <div className="h-full bg-blue rounded-full" style={{ width: '8%' }} />
+                <div
+                  className="h-full bg-blue rounded-full"
+                  style={{ width: maxProjects === null ? '0%' : `${Math.min((projects.length / maxProjects) * 100, 100)}%` }}
+                />
               </div>
             </div>
           </div>
+          {planId === 'free' && (
+            <a
+              href="/dashboard/settings"
+              className="mt-3 block text-center text-[11px] font-semibold text-violet hover:text-violet-dark transition-colors"
+            >
+              Upgrade to Pro →
+            </a>
+          )}
         </div>
 
         {/* User */}
