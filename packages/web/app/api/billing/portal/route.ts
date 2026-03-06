@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
-import { StripeBilling } from '@mycontxt/adapters/stripe/billing';
+import Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -26,9 +26,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No subscription found' }, { status: 404 });
   }
 
-  const billing = new StripeBilling(secretKey);
+  const stripe = new Stripe(secretKey, { apiVersion: '2024-12-18.acacia' as Stripe.LatestApiVersion });
   const origin = request.headers.get('origin') || 'https://mycontxt.ai';
-  const portalUrl = await billing.createPortalUrl(sub.stripe_customer_id, `${origin}/dashboard/settings`);
+  const portal = await stripe.billingPortal.sessions.create({
+    customer: sub.stripe_customer_id,
+    return_url: `${origin}/dashboard/settings`,
+  });
 
-  return NextResponse.json({ url: portalUrl });
+  return NextResponse.json({ url: portal.url });
 }

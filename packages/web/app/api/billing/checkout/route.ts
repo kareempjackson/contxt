@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
-import { StripeBilling } from '@mycontxt/adapters/stripe/billing';
 import { PLANS, type PlanId } from '@mycontxt/core/plans';
+import Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -23,23 +23,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Billing not configured' }, { status: 500 });
   }
 
-  const billing = new StripeBilling(secretKey);
+  const stripe = new Stripe(secretKey, { apiVersion: '2024-12-18.acacia' as Stripe.LatestApiVersion });
 
-  const customerId = await billing.getOrCreateCustomer(user.id, user.email!);
+  // Get or create Stripe customer
+  const existing = await stripe.customers.list({ email: user.email!, limit: 1 });
+  const customerId = existing.data.length > 0
+    ? existing.data[0].id
+    : (await stripe.customers.create({ email: user.email!, metadata: { contxt_user_id: user.id } })).id;
 
-  // Ensure subscription row exists with stripe_customer_id so the webhook can find it
+  // Ensure subscription row exists so the webhook can find the user
   await supabase.from('subscriptions').upsert(
     { user_id: user.id, stripe_customer_id: customerId, plan_id: 'free', status: 'active' },
     { onConflict: 'user_id', ignoreDuplicates: true }
   );
 
   const origin = request.headers.get('origin') || 'https://mycontxt.ai';
-  const checkoutUrl = await billing.createCheckoutUrl({
-    customerId,
-    priceId: plan.stripePriceIds[billingPeriod]!,
-    successUrl: `${origin}/dashboard/settings?upgraded=true`,
-    cancelUrl: `${origin}/dashboard/settings`,
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: 'subscription',
+    line_items: [{ price: plan.stripePriceIds[billingPeriod]!, quantity: 1 }],
+    success_url: `${origin}/dashboard/settings?upgraded=true`,
+    cancel_url: `${origin}/dashboard/settings`,
+    allow_promotion_codes: true,
   });
 
-  return NextResponse.json({ url: checkoutUrl });
+  return NextResponse.json({ url: session.url });
 }

@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { FadeUp } from '../../components/FadeUp';
 import Link from 'next/link';
 import { createClient } from '../../../lib/supabase/client';
 
 export default function SignupPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -29,7 +31,7 @@ export default function SignupPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -39,6 +41,10 @@ export default function SignupPage() {
 
     if (error) {
       setError(error.message);
+    } else if (data.session) {
+      // Email confirmations disabled — user is immediately authenticated
+      router.push('/onboarding');
+      return;
     } else {
       setSuccessMsg('Check your email to confirm your account.');
     }
