@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Project } from '@mycontxt/core';
 
 const PROJECT_COLORS = [
@@ -27,6 +28,18 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ projects, draftCount, user, planId, planName, maxProjects, maxEntries, entryCount }: DashboardSidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        router.push('/dashboard/search');
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [router]);
 
   return (
     <>
@@ -60,7 +73,9 @@ export function DashboardSidebar({ projects, draftCount, user, planId, planName,
           <input
             type="text"
             placeholder="Search memory…"
-            className="w-full h-[34px] px-3 pl-8 bg-black/[0.035] border-[1.5px] border-transparent rounded-[9px] text-[12.5px] text-text-0 placeholder:text-text-3 outline-none transition-all focus:bg-white focus:border-blue/30 focus:shadow-[0_0_0_3px_rgba(10,132,255,0.07)]"
+            readOnly
+            onClick={() => router.push('/dashboard/search')}
+            className="w-full h-[34px] px-3 pl-8 bg-black/[0.035] border-[1.5px] border-transparent rounded-[9px] text-[12.5px] text-text-0 placeholder:text-text-3 outline-none transition-all cursor-pointer hover:bg-black/[0.05]"
           />
           <svg
             className="absolute left-[18px] top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-3 pointer-events-none"

@@ -5,6 +5,7 @@ import { getPlan, type PlanId } from '@mycontxt/core/plans';
 import { DashboardSidebar } from './sidebar';
 import { RealtimeSync } from './realtime-sync';
 import { UserDropdown } from './user-dropdown';
+import { NavBreadcrumb } from './nav-breadcrumb';
 
 async function getLayoutData() {
   const supabase = await createClient();
@@ -63,7 +64,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {/* Top Nav */}
         <nav className="h-[52px] flex items-center px-8 bg-[#F6F6F6] sticky top-0 z-10">
           <div className="flex items-center gap-1.5 text-[13px]">
-            <span className="text-text-0 font-semibold">Projects</span>
+            <NavBreadcrumb />
           </div>
           <div className="ml-auto flex items-center gap-4">
             <a href="/docs" className="text-[13px] text-text-2 font-medium hover:text-text-0 transition-colors">

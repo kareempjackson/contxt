@@ -96,7 +96,18 @@ export function ProjectDetailClient({ project, planId }: ProjectDetailClientProp
     router.push(`?${sp.toString()}`);
   }
 
-  const tabs = ['Memory', 'Branches', 'Sessions', 'History', 'Settings'];
+  const tabs = ['Memory', 'Branches', 'Sessions', 'Settings'];
+
+  async function handleExport() {
+    const res = await fetch(`/api/user/export?projectId=${project.id}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `contxt-export-${project.name}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <>
@@ -116,7 +127,7 @@ export function ProjectDetailClient({ project, planId }: ProjectDetailClientProp
           {branch}
         </span>
         <div className="ml-auto flex items-center gap-2">
-          <button className="h-8 px-3 text-[12.5px] font-medium text-text-2 border border-black/[0.08] rounded-[9px] hover:bg-black/[0.03] transition-all">
+          <button onClick={handleExport} className="h-8 px-3 text-[12.5px] font-medium text-text-2 border border-black/[0.08] rounded-[9px] hover:bg-black/[0.03] transition-all">
             Export
           </button>
         </div>
@@ -268,10 +279,6 @@ export function ProjectDetailClient({ project, planId }: ProjectDetailClientProp
         </div>
       )}
 
-      {/* History & Settings tabs — minimal for now */}
-      {tab === 'history' && (
-        <div className="text-[13px] text-text-2 py-4">History coming in Phase 2.</div>
-      )}
       {tab === 'settings' && (
         <div className="space-y-4 max-w-130">
           {/* Info */}
