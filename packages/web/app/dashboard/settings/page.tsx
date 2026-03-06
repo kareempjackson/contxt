@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
 import { getPlan, type PlanId } from '@mycontxt/core/plans';
 import { SettingsClient } from './settings-client';
@@ -38,8 +39,12 @@ async function getSettingsData(stripeSessionId?: string) {
         };
         const resolvedPlan = (priceMap[priceId] ?? 'free') as PlanId;
         if (resolvedPlan !== 'free') {
-          // Update the DB immediately — don't wait for the webhook
-          await supabase.from('user_profiles').update({ plan_id: resolvedPlan }).eq('id', user.id);
+          // Use service role to bypass RLS — plan_id must be set by trusted server code only
+          const serviceClient = createServiceClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          );
+          await serviceClient.from('user_profiles').update({ plan_id: resolvedPlan }).eq('id', user.id);
           planId = resolvedPlan;
         }
       }

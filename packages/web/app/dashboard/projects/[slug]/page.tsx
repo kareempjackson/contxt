@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation';
 import { createClient } from '../../../../lib/supabase/server';
 import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
 import type { Project } from '@mycontxt/core';
+import { getUserPlan } from '../../../../lib/get-user-plan';
 import { ProjectDetailClient } from './client';
 
 async function getProject(slug: string): Promise<Project> {
@@ -27,7 +28,7 @@ interface PageProps {
 
 export default async function ProjectDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const project = await getProject(slug);
+  const [project, { planId }] = await Promise.all([getProject(slug), getUserPlan()]);
 
-  return <ProjectDetailClient project={project} />;
+  return <ProjectDetailClient project={project} planId={planId} />;
 }

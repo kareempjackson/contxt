@@ -20,9 +20,11 @@ const TYPE_BADGES: Record<string, string> = {
 interface Props {
   userId: string;
   projects: Project[];
+  planId: string;
 }
 
-export function SearchClient({ userId, projects }: Props) {
+export function SearchClient({ userId, projects, planId }: Props) {
+  const isProSearch = planId !== 'free';
   const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -74,6 +76,16 @@ export function SearchClient({ userId, projects }: Props) {
     <>
       <div className="flex items-center justify-between mb-8 mt-1">
         <h1 className="text-[20px] font-bold tracking-[-0.5px]">Search</h1>
+        {isProSearch && (
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-full bg-violet/10 text-violet">
+            Semantic search
+          </span>
+        )}
+        {!isProSearch && (
+          <a href="/dashboard/settings" className="text-[12px] font-medium text-text-3 hover:text-violet transition-colors">
+            Upgrade for semantic search →
+          </a>
+        )}
       </div>
 
       <form onSubmit={handleSearch} className="mb-4">

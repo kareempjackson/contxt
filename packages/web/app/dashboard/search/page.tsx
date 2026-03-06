@@ -21,5 +21,7 @@ async function getSearchContext() {
 
 export default async function SearchPage() {
   const { userId, projects } = await getSearchContext();
-  return <SearchClient userId={userId} projects={projects} />;
+  const { getUserPlan } = await import('../../../lib/get-user-plan');
+  const { planId } = await getUserPlan();
+  return <SearchClient userId={userId} projects={projects} planId={planId} />;
 }

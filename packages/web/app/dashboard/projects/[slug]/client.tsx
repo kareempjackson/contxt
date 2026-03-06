@@ -42,9 +42,11 @@ function timeAgo(date: Date): string {
 
 interface ProjectDetailClientProps {
   project: Project;
+  planId: string;
 }
 
-export function ProjectDetailClient({ project }: ProjectDetailClientProps) {
+export function ProjectDetailClient({ project, planId }: ProjectDetailClientProps) {
+  const isFree = planId === 'free';
   const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -218,16 +220,34 @@ export function ProjectDetailClient({ project }: ProjectDetailClientProps) {
 
       {/* Branches Tab */}
       {tab === 'branches' && (
-        <div className="space-y-1">
-          {branches.length === 0 && <div className="text-[13px] text-text-2 py-4">No branches found.</div>}
-          {branches.map((b) => (
-            <div key={b.id} className="flex items-center gap-3 px-4 py-3 bg-white rounded-[12px] shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-              <span className="text-text-3 text-[15px]">⎇</span>
-              <span className="text-[13px] font-medium text-text-0">{b.name}</span>
-              {b.isActive && <span className="ml-auto font-mono text-[10px] text-green">active</span>}
+        isFree ? (
+          <div className="bg-white rounded-[14px] p-10 text-center shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+            <div className="w-10 h-10 rounded-full bg-violet/10 flex items-center justify-center mx-auto mb-3">
+              <svg className="w-5 h-5 text-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
             </div>
-          ))}
-        </div>
+            <div className="text-[14px] font-semibold text-text-0 mb-1">Branching is a Pro feature</div>
+            <p className="text-[12.5px] text-text-2 mb-4">Create isolated context branches for features, experiments, or team members.</p>
+            <a
+              href="/dashboard/settings"
+              className="inline-flex items-center h-9 px-5 text-[13px] font-semibold text-white bg-violet rounded-[9px] hover:bg-violet-dark transition-colors"
+            >
+              Upgrade to Pro →
+            </a>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {branches.length === 0 && <div className="text-[13px] text-text-2 py-4">No branches found.</div>}
+            {branches.map((b) => (
+              <div key={b.id} className="flex items-center gap-3 px-4 py-3 bg-white rounded-[12px] shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+                <span className="text-text-3 text-[15px]">⎇</span>
+                <span className="text-[13px] font-medium text-text-0">{b.name}</span>
+                {b.isActive && <span className="ml-auto font-mono text-[10px] text-green">active</span>}
+              </div>
+            ))}
+          </div>
+        )
       )}
 
       {/* Sessions Tab */}

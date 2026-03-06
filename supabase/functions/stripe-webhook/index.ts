@@ -13,15 +13,27 @@ const supabase = createClient(
 );
 
 serve(async (req) => {
-  const sig = req.headers.get("stripe-signature")!;
-  const body = await req.text();
+  const sig = req.headers.get("stripe-signature");
+  if (!sig) {
+    return new Response(JSON.stringify({ error: "Missing stripe-signature" }), { status: 400 });
+  }
+
+  const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+  if (!webhookSecret) {
+    console.error("STRIPE_WEBHOOK_SECRET not set");
+    return new Response(JSON.stringify({ error: "Webhook secret not configured" }), { status: 500 });
+  }
+
+  // Read raw bytes to avoid any encoding issues with signature verification
+  const bodyBytes = await req.arrayBuffer();
+  const body = new TextDecoder("utf-8").decode(bodyBytes);
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(
+    event = await stripe.webhooks.constructEventAsync(
       body,
       sig,
-      Deno.env.get("STRIPE_WEBHOOK_SECRET")!,
+      webhookSecret,
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err);

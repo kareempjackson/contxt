@@ -31,10 +31,10 @@ export async function POST(request: NextRequest) {
     ? existing.data[0].id
     : (await stripe.customers.create({ email: user.email!, metadata: { contxt_user_id: user.id } })).id;
 
-  // Ensure subscription row exists so the webhook can find the user
+  // Ensure subscription row exists with the correct stripe_customer_id so the webhook can find the user
   await supabase.from('subscriptions').upsert(
     { user_id: user.id, stripe_customer_id: customerId, plan_id: 'free', status: 'active' },
-    { onConflict: 'user_id', ignoreDuplicates: true }
+    { onConflict: 'user_id' }
   );
 
   const origin = request.headers.get('origin') || 'https://mycontxt.ai';
