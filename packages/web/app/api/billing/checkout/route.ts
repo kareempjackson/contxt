@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { PLANS, type PlanId } from '@mycontxt/core/plans';
 import Stripe from 'stripe';
 
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { planId, billingPeriod } = await request.json() as { planId: PlanId; billingPeriod: 'monthly' | 'annual' };
+  const { planId, billingPeriod, cancelUrl } = await request.json() as { planId: PlanId; billingPeriod: 'monthly' | 'annual'; cancelUrl?: string };
 
   const plan = PLANS[planId];
   if (!plan || !plan.stripePriceIds[billingPeriod]) {
@@ -25,14 +26,31 @@ export async function POST(request: NextRequest) {
 
   const stripe = new Stripe(secretKey, { apiVersion: '2024-12-18.acacia' as Stripe.LatestApiVersion });
 
-  // Get or create Stripe customer
-  const existing = await stripe.customers.list({ email: user.email!, limit: 1 });
-  const customerId = existing.data.length > 0
-    ? existing.data[0].id
-    : (await stripe.customers.create({ email: user.email!, metadata: { contxt_user_id: user.id } })).id;
+  // Get or create Stripe customer — look up by user ID in metadata first to support
+  // GitHub users with private emails who have null email addresses.
+  const existingByMeta = await stripe.customers.search({
+    query: `metadata['contxt_user_id']:'${user.id}'`,
+    limit: 1,
+  });
+  let customerId: string;
+  if (existingByMeta.data.length > 0) {
+    customerId = existingByMeta.data[0].id;
+  } else if (user.email) {
+    const existingByEmail = await stripe.customers.list({ email: user.email, limit: 1 });
+    customerId = existingByEmail.data.length > 0
+      ? existingByEmail.data[0].id
+      : (await stripe.customers.create({ email: user.email, metadata: { contxt_user_id: user.id } })).id;
+  } else {
+    customerId = (await stripe.customers.create({ metadata: { contxt_user_id: user.id } })).id;
+  }
 
-  // Ensure subscription row exists with the correct stripe_customer_id so the webhook can find the user
-  await supabase.from('subscriptions').upsert(
+  // Ensure subscription row exists with the correct stripe_customer_id so the webhook can find the user.
+  // Must use service role — subscriptions RLS only allows service_role to INSERT/UPDATE.
+  const serviceClient = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+  await serviceClient.from('subscriptions').upsert(
     { user_id: user.id, stripe_customer_id: customerId, plan_id: 'free', status: 'active' },
     { onConflict: 'user_id' }
   );
@@ -43,7 +61,7 @@ export async function POST(request: NextRequest) {
     mode: 'subscription',
     line_items: [{ price: plan.stripePriceIds[billingPeriod]!, quantity: 1 }],
     success_url: `${origin}/dashboard/settings?upgraded=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/dashboard/settings`,
+    cancel_url: cancelUrl ? `${origin}${cancelUrl}` : `${origin}/dashboard/settings`,
     allow_promotion_codes: true,
   });
 

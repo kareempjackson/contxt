@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { createClient } from '../../../lib/supabase/client';
 
 interface SettingsClientProps {
   user: { name: string; email: string };
@@ -11,9 +12,26 @@ interface SettingsClientProps {
 }
 
 export function SettingsClient({ user, planId, planName, planPrice, justUpgraded }: SettingsClientProps) {
+  const [name, setName] = useState(user.name);
   const [autoSync, setAutoSync] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [billingLoading, setBillingLoading] = useState(false);
+  const [billingError, setBillingError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  async function handleSave() {
+    setSaving(true);
+    setSaveSuccess(false);
+    try {
+      const supabase = createClient();
+      await supabase.auth.updateUser({ data: { full_name: name.trim() } });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2500);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleUpgrade() {
     setBillingLoading(true);
@@ -32,10 +50,17 @@ export function SettingsClient({ user, planId, planName, planPrice, justUpgraded
 
   async function handleManage() {
     setBillingLoading(true);
+    setBillingError('');
     try {
       const res = await fetch('/api/billing/portal', { method: 'POST' });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setBillingError('Could not open billing portal. Please try again or contact support.');
+      }
+    } catch {
+      setBillingError('Could not open billing portal. Please try again.');
     } finally {
       setBillingLoading(false);
     }
@@ -73,7 +98,8 @@ export function SettingsClient({ user, planId, planName, planPrice, justUpgraded
               <label className="block text-[13px] font-semibold text-text-1 mb-2">Name</label>
               <input
                 type="text"
-                defaultValue={user.name}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full h-10 px-3.5 text-[13px] text-text-0 bg-bg border border-border rounded-[9px] outline-none transition-all focus:border-blue/30 focus:shadow-[0_0_0_3px_rgba(10,132,255,0.07)]"
               />
             </div>
@@ -114,6 +140,9 @@ export function SettingsClient({ user, planId, planName, planPrice, justUpgraded
                 )}
               </div>
             </div>
+            {billingError && (
+              <p className="text-[12px] text-rose mt-2">{billingError}</p>
+            )}
           </div>
         </div>
 
@@ -235,9 +264,16 @@ export function SettingsClient({ user, planId, planName, planPrice, justUpgraded
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end">
-          <button className="h-10 px-6 text-[13.5px] font-semibold text-white bg-blue rounded-[9px] shadow-[0_1px_3px_rgba(10,132,255,0.2)] hover:shadow-[0_3px_12px_rgba(10,132,255,0.25)] hover:bg-[#0070E0] transition-all">
-            Save changes
+        <div className="flex items-center justify-end gap-3">
+          {saveSuccess && (
+            <span className="text-[12.5px] text-green font-medium">Saved</span>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="h-10 px-6 text-[13.5px] font-semibold text-white bg-blue rounded-[9px] shadow-[0_1px_3px_rgba(10,132,255,0.2)] hover:shadow-[0_3px_12px_rgba(10,132,255,0.25)] hover:bg-[#0070E0] transition-all disabled:opacity-50"
+          >
+            {saving ? 'Saving…' : 'Save changes'}
           </button>
         </div>
       </div>
