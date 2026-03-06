@@ -53,9 +53,14 @@ export function SettingsClient({ user, planId, planName, planPrice, justUpgraded
         <h1 className="text-[20px] font-bold tracking-[-0.5px]">Settings</h1>
       </div>
 
-      {justUpgraded && (
+      {justUpgraded && isPaid && (
         <div className="mb-6 px-4 py-3 bg-green/10 border border-green/20 rounded-[10px] text-[13.5px] font-semibold text-green">
           You&apos;re now on {planName}. Welcome!
+        </div>
+      )}
+      {justUpgraded && !isPaid && (
+        <div className="mb-6 px-4 py-3 bg-amber/10 border border-amber/20 rounded-[10px] text-[13.5px] font-semibold text-amber-600">
+          Your upgrade is processing — this page will reflect your new plan shortly.
         </div>
       )}
 

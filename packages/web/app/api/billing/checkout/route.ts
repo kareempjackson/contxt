@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: plan.stripePriceIds[billingPeriod]!, quantity: 1 }],
-    success_url: `${origin}/dashboard/settings?upgraded=true`,
+    success_url: `${origin}/dashboard/settings?upgraded=true&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/dashboard/settings`,
     allow_promotion_codes: true,
   });
