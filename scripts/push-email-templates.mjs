@@ -66,6 +66,9 @@ const templates = {
 // ── Build payload ────────────────────────────────────────────────────────────
 
 const payload = {
+  // Sender name — replaces the default "Supabase Auth"
+  mailer_sender_name: 'Contxt',
+
   mailer_subjects_confirmation:    templates.confirmation.subject,
   mailer_templates_confirmation_content: templates.confirmation.content,
 
@@ -103,6 +106,7 @@ if (!res.ok) {
   process.exit(1);
 }
 
+console.log('✓  sender name    — Contxt');
 console.log('✓  confirmation   — Confirm your contxt account');
 console.log('✓  recovery       — Reset your contxt password');
 console.log('✓  magic_link     — Your contxt sign-in link');

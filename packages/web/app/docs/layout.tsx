@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createClient } from '../../lib/supabase/client';
 
 const navigation = [
   {
@@ -62,6 +63,14 @@ const navigation = [
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setIsLoggedIn(!!data.user);
+    });
+  }, []);
 
   return (
     <div className="h-screen flex flex-col bg-bg">
@@ -83,10 +92,10 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               </svg>
             </button>
             <a
-              href="/auth/login"
+              href={isLoggedIn ? '/dashboard' : '/auth/signup'}
               className="h-9 px-5 text-[13.5px] font-semibold rounded-full bg-bg-dark text-text-inv hover:bg-[#333] transition-colors flex items-center justify-center"
             >
-              Get started
+              {isLoggedIn ? 'Return to dashboard' : 'Get started'}
             </a>
           </div>
         </div>
