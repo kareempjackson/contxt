@@ -50,10 +50,18 @@ export async function POST(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   );
-  await serviceClient.from('subscriptions').upsert(
-    { user_id: user.id, stripe_customer_id: customerId, plan_id: 'free', status: 'active' },
-    { onConflict: 'user_id' }
-  );
+  await Promise.all([
+    serviceClient.from('subscriptions').upsert(
+      { user_id: user.id, stripe_customer_id: customerId, plan_id: 'free', status: 'active' },
+      { onConflict: 'user_id' }
+    ),
+    // Ensure user_profiles row exists (signup trigger can fail silently).
+    // ignoreDuplicates: true = ON CONFLICT DO NOTHING, so existing paid plans are not overwritten.
+    serviceClient.from('user_profiles').upsert(
+      { id: user.id },
+      { onConflict: 'id', ignoreDuplicates: true }
+    ),
+  ]);
 
   const origin = request.headers.get('origin') || 'https://mycontxt.ai';
   const session = await stripe.checkout.sessions.create({

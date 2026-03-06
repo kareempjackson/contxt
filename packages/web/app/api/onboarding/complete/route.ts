@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '../../../../lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -24,11 +25,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Also update user_profiles email/name if needed
-  await supabase
+  // Ensure user_profiles row exists (trigger can fail silently) and keep email current.
+  // Uses service role because users have no INSERT policy on user_profiles.
+  const serviceClient = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+  await serviceClient
     .from('user_profiles')
-    .update({ email: user.email })
-    .eq('id', user.id);
+    .upsert({ id: user.id, email: user.email ?? null }, { onConflict: 'id' });
 
   return NextResponse.json({ ok: true });
 }

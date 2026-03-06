@@ -18,8 +18,14 @@ async function getSettingsData(stripeSessionId?: string) {
     accessToken: session?.access_token,
   });
 
-  let profile = await db.getUserProfile(user.id).catch(() => null);
-  let planId = (profile?.plan_id as PlanId) || 'free';
+  const [profile, subResult] = await Promise.all([
+    db.getUserProfile(user.id).catch(() => null),
+    supabase.from('subscriptions').select('plan_id, status').eq('user_id', user.id).single(),
+  ]);
+
+  const sub = subResult.data;
+  const subPlan = (sub?.status === 'active' && sub?.plan_id !== 'free') ? sub.plan_id as PlanId : null;
+  let planId = subPlan || (profile?.plan_id as PlanId) || 'free';
 
   // Webhook hasn't fired yet — verify directly with Stripe and update DB
   if (stripeSessionId && planId === 'free' && process.env.STRIPE_SECRET_KEY) {
@@ -44,7 +50,10 @@ async function getSettingsData(stripeSessionId?: string) {
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!,
           );
-          await serviceClient.from('user_profiles').update({ plan_id: resolvedPlan }).eq('id', user.id);
+          await Promise.all([
+            serviceClient.from('user_profiles').upsert({ id: user.id, plan_id: resolvedPlan }, { onConflict: 'id' }),
+            serviceClient.from('subscriptions').update({ plan_id: resolvedPlan, status: 'active' }).eq('user_id', user.id),
+          ]);
           planId = resolvedPlan;
         }
       }

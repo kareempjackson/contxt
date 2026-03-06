@@ -89,10 +89,7 @@ serve(async (req) => {
           // Denormalize plan_id to user_profiles for fast reads
           await supabase
             .from("user_profiles")
-            .update({
-              plan_id: planId,
-            })
-            .eq("id", existingSub.user_id);
+            .upsert({ id: existingSub.user_id, plan_id: planId }, { onConflict: "id" });
         }
         break;
       }
@@ -127,10 +124,7 @@ serve(async (req) => {
         if (record) {
           await supabase
             .from("user_profiles")
-            .update({
-              plan_id: sub.status === "active" ? planId : "free",
-            })
-            .eq("id", record.user_id);
+            .upsert({ id: record.user_id, plan_id: sub.status === "active" ? planId : "free" }, { onConflict: "id" });
         }
         break;
       }
@@ -155,10 +149,7 @@ serve(async (req) => {
         if (record) {
           await supabase
             .from("user_profiles")
-            .update({
-              plan_id: "free",
-            })
-            .eq("id", record.user_id);
+            .upsert({ id: record.user_id, plan_id: "free" }, { onConflict: "id" });
         }
         break;
       }
@@ -205,8 +196,7 @@ serve(async (req) => {
           if (record) {
             await supabase
               .from("user_profiles")
-              .update({ plan_id: planId })
-              .eq("id", record.user_id);
+              .upsert({ id: record.user_id, plan_id: planId }, { onConflict: "id" });
           }
         }
         break;

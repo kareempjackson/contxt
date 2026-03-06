@@ -18,13 +18,16 @@ async function getLayoutData() {
     accessToken: session?.access_token,
   });
 
-  const [projects, drafts, profile] = await Promise.all([
+  const [projects, drafts, profile, subResult] = await Promise.all([
     db.getProjects(user.id).catch(() => []),
     db.getDrafts(user.id).catch(() => []),
     db.getUserProfile(user.id).catch(() => null),
+    supabase.from('subscriptions').select('plan_id, status').eq('user_id', user.id).single(),
   ]);
 
-  const planId = (profile?.plan_id as PlanId) || 'free';
+  const sub = subResult.data;
+  const subPlan = (sub?.status === 'active' && sub?.plan_id !== 'free') ? sub.plan_id as PlanId : null;
+  const planId = subPlan || (profile?.plan_id as PlanId) || 'free';
   const plan = getPlan(planId);
 
   return { user, projects, draftCount: drafts.length, planId, plan };
