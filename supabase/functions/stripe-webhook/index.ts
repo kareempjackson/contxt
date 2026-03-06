@@ -98,7 +98,9 @@ serve(async (req) => {
       }
 
       case "customer.subscription.updated": {
-        const sub = event.data.object as Stripe.Subscription;
+        // Retrieve fresh data via API so field shapes match our library version
+        const subId = (event.data.object as { id: string }).id;
+        const sub = await stripe.subscriptions.retrieve(subId);
         const priceId = sub.items.data[0].price.id;
         const planId = mapPriceIdToPlan(priceId);
 
@@ -108,9 +110,9 @@ serve(async (req) => {
             plan_id: planId,
             status: sub.status,
             cancel_at_period_end: sub.cancel_at_period_end,
-            current_period_end: new Date(
-              sub.current_period_end * 1000,
-            ).toISOString(),
+            current_period_end: sub.current_period_end
+              ? new Date(sub.current_period_end * 1000).toISOString()
+              : null,
             seats: sub.items.data[0].quantity || 1,
           })
           .eq("stripe_subscription_id", sub.id);
