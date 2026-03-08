@@ -27,6 +27,7 @@ import { hookCommand } from '../commands/hook.js';
 import { watchCommand } from '../commands/watch.js';
 import { billingCommand } from '../commands/billing.js';
 import { mcpCommand } from '../commands/mcp.js';
+import { listCommand, deleteCommand } from '../commands/entries.js';
 
 declare const __CLI_VERSION__: string;
 
@@ -49,6 +50,20 @@ program
   .description('Show project status and memory summary')
   .action(statusCommand);
 
+program
+  .command('list')
+  .description('List all entries')
+  .option('--type <type>', 'Filter by type: decision, pattern, doc, session, context')
+  .option('-b, --branch <branch>', 'Filter by branch')
+  .option('--full', 'Show full titles without truncation')
+  .action(listCommand);
+
+program
+  .command('delete <id>')
+  .description('Delete an entry by ID (or short ID prefix)')
+  .option('--force', 'Skip confirmation prompt')
+  .action(deleteCommand);
+
 // Decision commands
 const decision = program
   .command('decision')
@@ -58,7 +73,7 @@ decision
   .command('add')
   .description('Add a new decision')
   .requiredOption('-t, --title <title>', 'Decision title')
-  .requiredOption('-r, --rationale <rationale>', 'Decision rationale')
+  .option('-r, --rationale <rationale>', 'Decision rationale')
   .option('-a, --alternatives <alternatives...>', 'Alternative approaches considered')
   .option('-c, --consequences <consequences...>', 'Consequences of this decision')
   .option('--tags <tags...>', 'Tags for categorization')

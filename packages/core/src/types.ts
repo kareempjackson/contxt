@@ -137,7 +137,7 @@ export interface CreateEntryInput {
  */
 export interface DecisionInput {
   title: string;
-  rationale: string;
+  rationale?: string;
   alternatives?: string[];
   consequences?: string[];
   tags?: string[];

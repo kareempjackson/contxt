@@ -178,7 +178,12 @@ export class SyncEngine {
         for (const entry of remoteEntries) {
           const localEntry = await this.local.getEntry(entry.id);
 
-          if (!localEntry) {
+          if (entry.isArchived) {
+            // Entry was deleted/archived remotely — mirror locally
+            if (localEntry && !localEntry.isArchived) {
+              await this.local.deleteEntry(entry.id); // soft delete
+            }
+          } else if (!localEntry) {
             // New entry - create it
             await this.local.createEntry({
               id: entry.id,

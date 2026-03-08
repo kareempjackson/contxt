@@ -362,7 +362,7 @@ async function runWatcher(options: WatchOptions = {}) {
           for (const comment of comments) {
             if (!hashes.has(comment.hash)) {
               const entry = scanCommentToEntry(comment, project.id);
-              await db.createEntry({ projectId: project.id, type: entry.type, title: entry.title, content: entry.content, metadata: entry.metadata, status: 'draft' });
+              await db.createEntry({ projectId: project.id, type: entry.type, title: entry.title, content: entry.content, metadata: entry.metadata, status: 'active' });
               hashes.add(comment.hash);
               newDrafts++;
             }

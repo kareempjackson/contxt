@@ -50,7 +50,11 @@ export function formatEntry(entry: MemoryEntry): string {
   lines.push('');
 
   // Content
-  lines.push(entry.content);
+  if (entry.content?.trim()) {
+    lines.push(entry.content);
+  } else {
+    lines.push(chalk.dim('No rationale provided.'));
+  }
 
   // Metadata
   if (Object.keys(entry.metadata).length > 0) {

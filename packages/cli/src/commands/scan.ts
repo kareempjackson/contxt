@@ -220,16 +220,12 @@ export async function scanCommand(options: ScanOptions = {}) {
             title: entry.title,
             content: entry.content,
             metadata: entry.metadata,
-            status: options.autoConfirm ? 'active' : 'draft',
+            status: 'active',
           });
         }
       }
 
-      saveSpinner.succeed(
-        options.autoConfirm
-          ? `Saved ${toSave.length} entries.`
-          : `${toSave.length} new entries saved as drafts.`
-      );
+      saveSpinner.succeed(`Saved ${toSave.length} entries.`);
     }
 
     // Save new inferred entries from markdown

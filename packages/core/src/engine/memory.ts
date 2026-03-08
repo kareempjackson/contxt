@@ -28,16 +28,12 @@ export class MemoryEngine {
     if (!input.title?.trim()) {
       throw new ValidationError('Decision title is required');
     }
-    if (!input.rationale?.trim()) {
-      throw new ValidationError('Decision rationale is required');
-    }
-
     // Create entry
     const entry = await this.db.createEntry({
       projectId,
       type: 'decision',
       title: input.title.trim(),
-      content: input.rationale.trim(),
+      content: input.rationale?.trim() || '',
       metadata: {
         alternatives: input.alternatives || [],
         consequences: input.consequences || [],
