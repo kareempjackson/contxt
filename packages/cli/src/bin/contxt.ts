@@ -393,6 +393,7 @@ program
   .command('watch')
   .description('Start background file watcher for passive context capture')
   .option('--daemon', 'Run as background process')
+  .option('--polling', 'Use polling instead of native FS events (for Linux/containers/Docker)')
   .action(watchCommand.start);
 
 program

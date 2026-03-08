@@ -2,7 +2,7 @@
  * Watch command — background file watcher for passive context capture
  */
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, unlinkSync, openSync, appendFileSync } from 'fs';
 import { join, relative } from 'path';
 import { spawn } from 'child_process';
 import chalk from 'chalk';
@@ -23,6 +23,7 @@ const DEBOUNCE_MS = 30_000; // 30s batch window
 
 interface WatchOptions {
   daemon?: boolean;
+  polling?: boolean;
 }
 
 /**
@@ -33,7 +34,7 @@ export async function startCommand(options: WatchOptions = {}) {
     return startDaemon();
   }
 
-  return runWatcher();
+  return runWatcher(options);
 }
 
 /**
@@ -99,7 +100,7 @@ function startDaemon() {
   }
 
   const logPath = join(process.cwd(), LOG_FILE);
-  const logStream = require('fs').openSync(logPath, 'a');
+  const logStream = openSync(logPath, 'a');
 
   const child = spawn(process.execPath, [process.argv[1], 'watch'], {
     env: { ...process.env, CONTXT_WATCH_DAEMON: '1' },
@@ -117,9 +118,10 @@ function startDaemon() {
 /**
  * Main watcher loop
  */
-async function runWatcher() {
+async function runWatcher(options: WatchOptions = {}) {
   const cwd = process.cwd();
   const isDaemon = process.env.CONTXT_WATCH_DAEMON === '1';
+  const usePolling = options.polling || process.env.CONTXT_USE_POLLING === '1';
 
   const db = await getProjectDb(cwd);
   const project = await db.getProjectByPath(cwd);
@@ -137,6 +139,7 @@ async function runWatcher() {
   }
 
   // Pending file batches
+  let initialScanComplete = false;
   const pendingFiles = new Set<string>();
   let flushTimer: NodeJS.Timeout | null = null;
   let sessionStart: Date | null = null;
@@ -165,8 +168,8 @@ async function runWatcher() {
     ignored,
     ignoreInitial: true,
     persistent: true,
-    usePolling: false,
-    interval: 1000,
+    usePolling,
+    interval: usePolling ? 1000 : undefined,
   });
 
   // Watch .contxt/rules.md for auto-sync
@@ -185,7 +188,9 @@ async function runWatcher() {
   });
 
   // New file added — .md files are processed immediately, others batched
+  // Guard: skip during initial scan (initialMarkdownScan handles those)
   watcher.on('add', (filePath: string) => {
+    if (!initialScanComplete) return;
     if (filePath.endsWith('.md')) {
       inferMarkdownFile(filePath);
     } else {
@@ -426,7 +431,7 @@ async function runWatcher() {
       console.log(`  ${chalk.gray(time)}  ${chalk.cyan(type.padEnd(8))} ${message}`);
     } else {
       try {
-        require('fs').appendFileSync(join(cwd, LOG_FILE), line + '\n');
+        appendFileSync(join(cwd, LOG_FILE), line + '\n');
       } catch {
         // Ignore log write errors
       }
@@ -456,8 +461,9 @@ async function runWatcher() {
   }
 
   // Scan existing .md files once the watcher is ready
-  watcher.on('ready', () => {
-    initialMarkdownScan();
+  watcher.on('ready', async () => {
+    await initialMarkdownScan();
+    initialScanComplete = true;
   });
 }
 

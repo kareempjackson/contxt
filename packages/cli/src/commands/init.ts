@@ -119,23 +119,33 @@ function installGitHooks(cwd: string): boolean {
 /**
  * Spawn the watch daemon in the background — auto-captures file changes and auto-syncs.
  * Returns false if the binary is not on PATH yet (e.g. fresh install before shell refresh).
+ * Polls for the PID file up to 3s to verify the daemon actually started.
  */
-function startWatchDaemon(cwd: string): boolean {
+async function startWatchDaemon(cwd: string): Promise<boolean> {
   const pidFile = join(cwd, '.contxt', '.watch.pid');
   if (existsSync(pidFile)) return true; // Already running
 
+  let spawnFailed = false;
   try {
     const child = spawn('contxt', ['watch', '--daemon'], {
       detached: true,
       stdio: 'ignore',
       cwd,
     });
-    child.on('error', () => {}); // suppress ENOENT — user can run `contxt watch` manually
+    child.on('error', () => { spawnFailed = true; });
     child.unref();
-    return true;
   } catch {
     return false;
   }
+
+  // Poll for PID file up to 3s to verify daemon started successfully
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 200));
+    if (spawnFailed) return false;
+    if (existsSync(pidFile)) return true;
+  }
+  return false;
 }
 
 /**
@@ -253,7 +263,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
     const hooksInstalled = installGitHooks(cwd);
 
     // Start watch daemon in background (auto-sync enabled)
-    const daemonStarted = startWatchDaemon(cwd);
+    const daemonStarted = await startWatchDaemon(cwd);
 
     // Register Claude Code UserPromptSubmit hook for silent context injection
     registerClaudeCodeHook();
