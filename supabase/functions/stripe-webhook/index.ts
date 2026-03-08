@@ -60,18 +60,30 @@ serve(async (req) => {
             ? "annual"
             : "monthly";
 
-        // Find user by stripe_customer_id
+        // Find user — try subscriptions table first, fall back to Stripe customer metadata
         const { data: existingSub } = await supabase
           .from("subscriptions")
           .select("user_id")
           .eq("stripe_customer_id", customerId)
           .single();
 
-        if (existingSub) {
-          // Update existing subscription record
+        let userId: string | null = existingSub?.user_id ?? null;
+
+        if (!userId) {
+          // Fall back to contxt_user_id stored in Stripe customer metadata
+          const customer = await stripe.customers.retrieve(customerId);
+          if (!customer.deleted && (customer as Stripe.Customer).metadata?.contxt_user_id) {
+            userId = (customer as Stripe.Customer).metadata.contxt_user_id;
+          }
+        }
+
+        if (userId) {
+          // Upsert subscription record with full Stripe data
           await supabase
             .from("subscriptions")
-            .update({
+            .upsert({
+              user_id: userId,
+              stripe_customer_id: customerId,
               stripe_subscription_id: subscriptionId,
               plan_id: planId,
               status: "active",
@@ -83,13 +95,12 @@ serve(async (req) => {
                 sub.current_period_end * 1000,
               ).toISOString(),
               seats: sub.items.data[0].quantity || 1,
-            })
-            .eq("stripe_customer_id", customerId);
+            }, { onConflict: "user_id" });
 
           // Denormalize plan_id to user_profiles for fast reads
           await supabase
             .from("user_profiles")
-            .upsert({ id: existingSub.user_id, plan_id: planId }, { onConflict: "id" });
+            .upsert({ id: userId, plan_id: planId }, { onConflict: "id" });
         }
         break;
       }
@@ -114,17 +125,28 @@ serve(async (req) => {
           })
           .eq("stripe_subscription_id", sub.id);
 
-        // Update user_profiles
-        const { data: record } = await supabase
-          .from("subscriptions")
-          .select("user_id")
-          .eq("stripe_subscription_id", sub.id)
-          .single();
+        // Update user_profiles — only for terminal/confirmed states to avoid
+        // overwriting "pro" with "free" during transitional states (incomplete, past_due).
+        let profilePlanId: string | null = null;
+        if (sub.status === "active" || sub.status === "trialing") {
+          profilePlanId = planId;
+        } else if (sub.status === "canceled") {
+          profilePlanId = "free";
+        }
+        // For 'incomplete', 'past_due', etc. — leave user_profiles unchanged
 
-        if (record) {
-          await supabase
-            .from("user_profiles")
-            .upsert({ id: record.user_id, plan_id: sub.status === "active" ? planId : "free" }, { onConflict: "id" });
+        if (profilePlanId !== null) {
+          const { data: record } = await supabase
+            .from("subscriptions")
+            .select("user_id")
+            .eq("stripe_subscription_id", sub.id)
+            .single();
+
+          if (record) {
+            await supabase
+              .from("user_profiles")
+              .upsert({ id: record.user_id, plan_id: profilePlanId }, { onConflict: "id" });
+          }
         }
         break;
       }

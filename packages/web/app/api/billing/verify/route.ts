@@ -32,10 +32,18 @@ export async function GET(request: NextRequest) {
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY!,
           );
-          await Promise.all([
+          const [profileResult, subResult] = await Promise.all([
             serviceClient.from('user_profiles').upsert({ id: user.id, plan_id: planId }, { onConflict: 'id' }),
-            serviceClient.from('subscriptions').update({ plan_id: planId, status: 'active' }).eq('user_id', user.id),
+            serviceClient.from('subscriptions').upsert({
+              user_id: user.id,
+              plan_id: planId,
+              status: 'active',
+              stripe_customer_id: checkoutSession.customer as string,
+              stripe_subscription_id: checkoutSession.subscription as string,
+            }, { onConflict: 'user_id' }),
           ]);
+          if (profileResult.error) console.error('[billing/verify] profile update failed:', profileResult.error);
+          if (subResult.error) console.error('[billing/verify] subscription update failed:', subResult.error);
         }
       }
     } catch {
