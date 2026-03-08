@@ -2,6 +2,7 @@
  * Session commands
  */
 
+import inquirer from 'inquirer';
 import type { SessionInput } from '@mycontxt/core';
 import { loadProject } from '../utils/project.js';
 import { success, error, info, formatEntry, formatEntryList, section } from '../utils/output.js';
@@ -45,7 +46,17 @@ async function end(options: EndOptions): Promise<void> {
   try {
     const { engine, projectId, db } = await loadProject();
 
-    const session = await engine.endSession(projectId, options.summary);
+    let summary = options.summary;
+    if (!summary) {
+      const { input } = await inquirer.prompt([{
+        type: 'input',
+        name: 'input',
+        message: 'Session summary (optional — press Enter to skip):',
+      }]);
+      summary = input.trim() || undefined;
+    }
+
+    const session = await engine.endSession(projectId, summary);
 
     success(`Ended session: ${session.title}`);
 

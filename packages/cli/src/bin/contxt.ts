@@ -328,7 +328,9 @@ program
 // Rules commands
 const rules = program
   .command('rules')
-  .description('Manage .contxt/rules.md file');
+  .description('Manage .contxt/rules.md file')
+  .addHelpCommand(false)
+  .action(function (this: any) { this.help(); });
 
 rules
   .command('sync')

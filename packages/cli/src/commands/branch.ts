@@ -72,6 +72,13 @@ export const branchCommand = {
           const parent = branch.parentBranch ? ` (from ${branch.parentBranch})` : '';
           console.log(`${prefix}${branch.name}${parent}`);
         }
+
+        const gate = await createUsageGate(db, project.id);
+        const gateResult = gate.checkFeature('branchingEnabled');
+        if (!gateResult.allowed) {
+          console.log('');
+          console.log('  ℹ Branching is a Pro feature — upgrade to create branches: contxt billing upgrade');
+        }
       } finally {
         await db.close();
       }

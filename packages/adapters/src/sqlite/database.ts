@@ -207,9 +207,17 @@ export class SQLiteDatabase implements ILocalDatabase {
   }
 
   async getEntry(id: string): Promise<MemoryEntry | null> {
-    const row = this.db
-      .prepare('SELECT * FROM memory_entries WHERE id = ?')
-      .get(id) as any;
+    let row: any;
+    if (id.length < 36) {
+      // Short ID prefix match
+      row = this.db
+        .prepare('SELECT * FROM memory_entries WHERE id LIKE ?')
+        .get(id + '%') as any;
+    } else {
+      row = this.db
+        .prepare('SELECT * FROM memory_entries WHERE id = ?')
+        .get(id) as any;
+    }
 
     if (!row) return null;
 

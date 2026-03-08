@@ -24,6 +24,10 @@ export async function statusCommand(): Promise<void> {
     const documents = await engine.listDocuments(projectId);
     const sessions = await engine.listSessions(projectId);
     const context = await engine.getContext(projectId);
+    const contextCountRow = (db as any).db.prepare(
+      "SELECT COUNT(*) as count FROM memory_entries WHERE project_id = ? AND type = 'context' AND is_archived = 0"
+    ).get(projectId) as { count: number };
+    const contextCount = contextCountRow.count;
 
     // Get unsynced count
     const unsynced = await db.getUnsyncedEntries(projectId);
@@ -48,9 +52,10 @@ export async function statusCommand(): Promise<void> {
     console.log();
     console.log(`  Decisions:  ${decisions.length}`);
     console.log(`  Patterns:   ${patterns.length}`);
+    console.log(`  Context:    ${contextCount}`);
     console.log(`  Documents:  ${documents.length}`);
     console.log(`  Sessions:   ${sessions.length}`);
-    console.log(`  Total:      ${decisions.length + patterns.length + documents.length + sessions.length}`);
+    console.log(`  Total:      ${decisions.length + patterns.length + contextCount + documents.length + sessions.length}`);
     console.log();
 
     if (context) {
