@@ -106,6 +106,20 @@ export default function DocsInstallation() {
           This removes the CLI but preserves any <code className="font-mono text-[15px] bg-bg-dark/5 px-2 py-0.5 rounded">.contxt/</code> directories in your projects.
         </p>
       </FadeUp>
+
+      <FadeUp delay={0.4}>
+        <div className="h-px bg-border my-12" />
+        <div className="grid grid-cols-2 gap-4">
+          <a href="/docs" className="block p-5 bg-white border border-border rounded-xl hover:border-violet/40 hover:shadow-sm transition-all">
+            <div className="text-[12px] font-mono uppercase tracking-[1.5px] text-text-3 mb-2">Previous</div>
+            <div className="text-[15px] font-semibold text-text-0">Introduction</div>
+          </a>
+          <a href="/docs/quick-start" className="block p-5 bg-white border border-border rounded-xl hover:border-violet/40 hover:shadow-sm transition-all">
+            <div className="text-[12px] font-mono uppercase tracking-[1.5px] text-text-3 mb-2">Next</div>
+            <div className="text-[15px] font-semibold text-text-0">Quick Start</div>
+          </a>
+        </div>
+      </FadeUp>
     </article>
   );
 }

@@ -84,11 +84,27 @@ async function getSubscriptionStatus(userId: string, accessToken: string): Promi
     });
     await supabase.initialize();
 
-    const profile = await supabase.getUserProfile(userId);
-    const planId = (profile?.plan_id as PlanId) || 'free';
+    // Query subscriptions table first (source of truth for paid plans)
+    const { data: sub } = await supabase.client
+      .from('subscriptions')
+      .select('plan_id, status, current_period_end, cancel_at_period_end')
+      .eq('user_id', userId)
+      .single();
 
-    // TODO: Fetch subscription details from subscriptions table
-    return { planId };
+    let planId: PlanId = 'free';
+    if (sub?.status === 'active' && sub?.plan_id && sub.plan_id !== 'free') {
+      planId = sub.plan_id as PlanId;
+    } else {
+      const profile = await supabase.getUserProfile(userId);
+      planId = (profile?.plan_id as PlanId) || 'free';
+    }
+
+    return {
+      planId,
+      status: sub?.status ?? undefined,
+      currentPeriodEnd: sub?.current_period_end ? new Date(sub.current_period_end) : undefined,
+      cancelAtPeriodEnd: sub?.cancel_at_period_end ?? undefined,
+    };
   } catch {
     return { planId: 'free' };
   }
@@ -235,9 +251,23 @@ export const billingCommand = {
       });
       await supabase.initialize();
 
-      // TODO: Query subscriptions table for stripe_customer_id
-      // For now, get or create customer
-      const customerId = await billing.getOrCreateCustomer(auth.userId, auth.email);
+      // Look up existing stripe_customer_id from subscriptions table
+      const config2 = getSupabaseConfig();
+      const supabase2 = new SupabaseDatabase({
+        url: config2.url,
+        anonKey: config2.anonKey,
+        accessToken: auth.accessToken,
+      });
+      await supabase2.initialize();
+      const { data: subRow } = await supabase2.client
+        .from('subscriptions')
+        .select('stripe_customer_id')
+        .eq('user_id', auth.userId)
+        .single();
+
+      const customerId = subRow?.stripe_customer_id
+        ? subRow.stripe_customer_id
+        : await billing.getOrCreateCustomer(auth.userId, auth.email);
 
       // Create portal session
       const portalUrl = await billing.createPortalUrl(

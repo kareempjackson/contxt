@@ -98,7 +98,7 @@ export default function DocsMCPSetup() {
             <code className="text-white/40">{'  "mcpServers": {\n'}</code>
             <code className="text-white/40">{'    "contxt": {\n'}</code>
             <code>{'      '}<span className="text-[#6EE7B7]">"command"</span>{': '}<span className="text-[#FCA5A5]">"contxt"</span>{',\n'}</code>
-            <code>{'      '}<span className="text-[#6EE7B7]">"args"</span>{': ['}<span className="text-[#FCA5A5]">"mcp"</span>{', '}<span className="text-[#FCA5A5]">"serve"</span>{'],\n'}</code>
+            <code>{'      '}<span className="text-[#6EE7B7]">"args"</span>{': ['}<span className="text-[#FCA5A5]">"mcp"</span>{'],\n'}</code>
             <code>{'      '}<span className="text-[#6EE7B7]">"env"</span>{': {\n'}</code>
             <code>{'        '}<span className="text-[#6EE7B7]">"CONTXT_PROJECT"</span>{': '}<span className="text-[#FCA5A5]">"/path/to/your/project"</span>{'\n'}</code>
             <code>{'      }\n'}</code>

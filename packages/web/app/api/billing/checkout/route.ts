@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   await Promise.all([
     serviceClient.from('subscriptions').upsert(
       { user_id: user.id, stripe_customer_id: customerId, plan_id: 'free', status: 'active' },
-      { onConflict: 'user_id' }
+      { onConflict: 'user_id', ignoreDuplicates: true }
     ),
     // Ensure user_profiles row exists (signup trigger can fail silently).
     // ignoreDuplicates: true = ON CONFLICT DO NOTHING, so existing paid plans are not overwritten.
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: plan.stripePriceIds[billingPeriod]!, quantity: 1 }],
-    success_url: `${origin}/dashboard/settings?upgraded=true&session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${origin}/api/billing/verify?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: cancelUrl ? `${origin}${cancelUrl}` : `${origin}/dashboard/settings`,
     allow_promotion_codes: true,
   });

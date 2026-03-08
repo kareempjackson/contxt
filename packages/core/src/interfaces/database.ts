@@ -271,6 +271,15 @@ export interface IRemoteDatabase {
     }
   ): Promise<MemoryEntry[]>;
 
+  semanticSearchAll(
+    userId: string,
+    queryEmbedding: number[],
+    options?: {
+      limit?: number;
+      minSimilarity?: number;
+    }
+  ): Promise<MemoryEntry[]>;
+
   // ==================
   // Branching
   // ==================

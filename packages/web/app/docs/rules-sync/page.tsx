@@ -179,26 +179,30 @@ export default function RulesSyncPage() {
           Auto-Sync with Watch
         </h2>
         <p className="text-[17px] text-text-1 leading-[1.8] mb-4">
-          When{' '}
-          <code className="font-mono text-[15px] bg-bg-dark/5 px-2 py-0.5 rounded">contxt watch</code> is running,
-          you do not need to run{' '}
+          If you initialized your project with{' '}
+          <code className="font-mono text-[15px] bg-bg-dark/5 px-2 py-0.5 rounded">contxt init</code>, the watch
+          daemon is already running — no extra setup needed. The daemon monitors{' '}
+          <code className="font-mono text-[15px] bg-bg-dark/5 px-2 py-0.5 rounded">.contxt/rules.md</code> for
+          changes and automatically triggers a sync the moment you save the file. Changes appear in memory within
+          seconds. You do not need to run{' '}
           <code className="font-mono text-[15px] bg-bg-dark/5 px-2 py-0.5 rounded">contxt rules sync</code> manually.
-          The daemon monitors{' '}
-          <code className="font-mono text-[15px] bg-bg-dark/5 px-2 py-0.5 rounded">.contxt/rules.md</code> for file
-          system changes and automatically triggers a sync the moment you save the file in your editor. Changes appear
-          in memory within seconds.
+        </p>
+        <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-4">
+          <pre className="font-mono text-[13.5px] leading-[1.9]">
+            <code className="text-white/40">{'# Edit .contxt/rules.md in your editor and save\n'}</code>
+            {'  '}
+            <code className="text-white/75">{'15:22  rules    rules.md changed — syncing 2 updates'}</code>
+          </pre>
+        </div>
+        <p className="text-[17px] text-text-1 leading-[1.8] mb-4">
+          If the daemon was stopped, restart it:
         </p>
         <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-4">
           <pre className="font-mono text-[13.5px] leading-[1.9]">
             <code className="text-white/40">$ </code>
             <code className="text-white/90">contxt watch --daemon</code>
             {'\n'}
-            <code className="text-[#6EE7B7]">{'✓ Watcher started (PID 48291)\n'}</code>
-            {'\n'}
-            <code className="text-white/40">{'# Edit .contxt/rules.md in your editor\n'}</code>
-            <code className="text-white/40">{'# Save the file\n'}</code>
-            {'  '}
-            <code className="text-white/75">{'15:22  rules    rules.md changed — syncing 2 updates'}</code>
+            <code className="text-[#6EE7B7]">{'✓ Watcher started (PID 48291)'}</code>
           </pre>
         </div>
         <p className="text-[14px] text-text-2 mb-12">
@@ -206,7 +210,7 @@ export default function RulesSyncPage() {
           <a href="/docs/watch" className="text-violet hover:underline">
             Watch Daemon
           </a>{' '}
-          page for full setup instructions.
+          page for details on automatic setup and auto-sync behavior.
         </p>
       </FadeUp>
 

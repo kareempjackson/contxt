@@ -225,18 +225,20 @@ export default function PassiveCapturePage() {
           Quick Start
         </h2>
         <p className="text-[17px] text-text-1 leading-[1.8] mb-4">
-          Enable git hooks and background watching in two commands:
+          If you initialized with <code className="font-mono text-[15px] bg-bg-dark/5 px-2 py-0.5 rounded">contxt init</code>, git hooks and the watch daemon are already running — no extra setup needed. To re-enable them manually if stopped:
         </p>
         <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-6">
           <pre className="font-mono text-[13.5px] leading-[1.8]">
             <code className="text-white/40">$ </code>
             <code className="text-white/90">contxt hook install</code>
-            {'\n'}
+            {'    '}
+            <code className="text-white/40"># re-install git hooks{'\n'}</code>
             <code className="text-[#6EE7B7]">{'✓ Installed post-commit, pre-push, post-checkout hooks\n'}</code>
             {'\n'}
             <code className="text-white/40">$ </code>
             <code className="text-white/90">contxt watch --daemon</code>
-            {'\n'}
+            {'  '}
+            <code className="text-white/40"># restart background watcher{'\n'}</code>
             <code className="text-[#6EE7B7]">{'✓ Watcher started (PID 48291) — monitoring src/'}</code>
           </pre>
         </div>

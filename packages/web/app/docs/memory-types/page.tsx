@@ -91,7 +91,7 @@ export default function DocsMemoryTypes() {
             Active working context — what you're building right now. Context entries tell your AI about current state so it can give relevant suggestions without you re-explaining each session.
           </p>
           <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-6">
-            <code className="font-mono text-[13.5px] text-white/90">contxt context set</code>
+            <code className="font-mono text-[13.5px] text-white/90">contxt context add</code>
           </div>
 
           <div className="bg-white border border-border rounded-xl p-6 mb-6">

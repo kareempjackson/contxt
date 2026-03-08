@@ -133,7 +133,7 @@ export default function DocsQuickStart() {
               <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto">
                 <pre className="font-mono text-[13.5px] leading-[1.8]">
                   <code className="text-white/40">$ </code>
-                  <code className="text-white/90">contxt context set </code>
+                  <code className="text-white/90">contxt context add </code>
                   <span className="text-[#C4B5FD]">\</span>
                   {'\n  '}
                   <code className="text-[#C4B5FD]">--feature</code>{' '}
@@ -204,7 +204,7 @@ export default function DocsQuickStart() {
                   <code className="text-white/40">{'  "mcpServers": {\n'}</code>
                   <code className="text-white/40">{'    "contxt": {\n'}</code>
                   <code>{'      '}<span className="text-[#6EE7B7]">"command"</span>{': '}<span className="text-[#FCA5A5]">"contxt"</span>{',\n'}</code>
-                  <code>{'      '}<span className="text-[#6EE7B7]">"args"</span>{': ['}<span className="text-[#FCA5A5]">"mcp"</span>{', '}<span className="text-[#FCA5A5]">"serve"</span>{']\n'}</code>
+                  <code>{'      '}<span className="text-[#6EE7B7]">"args"</span>{': ['}<span className="text-[#FCA5A5]">"mcp"</span>{']\n'}</code>
                   <code className="text-white/40">{'    }\n'}</code>
                   <code className="text-white/40">{'  }\n'}</code>
                   <code className="text-white/40">{'}'}</code>

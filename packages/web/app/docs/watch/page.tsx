@@ -45,6 +45,66 @@ export default function WatchPage() {
         </div>
       </FadeUp>
 
+      <FadeUp delay={0.12}>
+        <h2 className="font-serif text-[32px] font-normal leading-[1.2] tracking-tight text-text-0 mb-4">
+          Automatic Setup with <code className="font-mono text-[28px]">contxt init</code>
+        </h2>
+        <p className="text-[17px] text-text-1 leading-[1.8] mb-4">
+          You don't need to start the watcher manually. <code className="font-mono text-[15px] bg-bg px-1.5 py-0.5 rounded">contxt init</code> sets everything up automatically at the end of project initialization:
+        </p>
+        <div className="bg-white border border-border rounded-xl p-6 mb-6">
+          <ul className="space-y-4 text-[15px]">
+            <li className="flex gap-3">
+              <span className="text-green font-bold shrink-0 mt-0.5">✓</span>
+              <div>
+                <strong className="text-text-0">Watch daemon started</strong>
+                <p className="text-text-2 mt-0.5">The background daemon is launched immediately so passive capture begins the moment your project is created.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-green font-bold shrink-0 mt-0.5">✓</span>
+              <div>
+                <strong className="text-text-0">Auto-sync enabled</strong>
+                <p className="text-text-2 mt-0.5">The project config is written with <code className="font-mono text-[13px] bg-bg px-1 rounded">autoSync: true</code>. After every 30-second file flush the daemon automatically calls <code className="font-mono text-[13px] bg-bg px-1 rounded">contxt sync push</code> — no manual push needed.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-green font-bold shrink-0 mt-0.5">✓</span>
+              <div>
+                <strong className="text-text-0">MCP config written</strong>
+                <p className="text-text-2 mt-0.5">Both <code className="font-mono text-[13px] bg-bg px-1 rounded">.mcp.json</code> (Claude Code) and <code className="font-mono text-[13px] bg-bg px-1 rounded">.cursor/mcp.json</code> are created so your AI editors can immediately access the Contxt MCP server.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-green font-bold shrink-0 mt-0.5">✓</span>
+              <div>
+                <strong className="text-text-0">Git hooks installed</strong>
+                <p className="text-text-2 mt-0.5"><code className="font-mono text-[13px] bg-bg px-1 rounded">post-commit</code> and <code className="font-mono text-[13px] bg-bg px-1 rounded">pre-push</code> hooks are added to <code className="font-mono text-[13px] bg-bg px-1 rounded">.git/hooks/</code> to sync context on every commit and push.</p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-green font-bold shrink-0 mt-0.5">✓</span>
+              <div>
+                <strong className="text-text-0">Claude Code hook registered</strong>
+                <p className="text-text-2 mt-0.5">A <code className="font-mono text-[13px] bg-bg px-1 rounded">UserPromptSubmit</code> hook is added to <code className="font-mono text-[13px] bg-bg px-1 rounded">~/.claude/settings.json</code> so Claude silently loads project context at the start of every session.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-4">
+          <pre className="font-mono text-[13px] text-white/90 m-0">{`contxt init
+
+✓ Project "my-app" created
+✓ Git hooks installed
+✓ MCP config written (.mcp.json, .cursor/mcp.json)
+✓ Claude Code hook registered
+✓ Watch daemon started (auto-sync enabled)`}</pre>
+        </div>
+        <p className="text-[17px] text-text-1 leading-[1.8] mb-6">
+          If the daemon is ever stopped, restart it with <code className="font-mono text-[15px] bg-bg px-1.5 py-0.5 rounded">contxt watch --daemon</code>. Use <code className="font-mono text-[15px] bg-bg px-1.5 py-0.5 rounded">contxt watch:status</code> to confirm it's running.
+        </p>
+      </FadeUp>
+
       <FadeUp delay={0.15}>
         <h2 className="font-serif text-[32px] font-normal leading-[1.2] tracking-tight text-text-0 mb-4">
           What It Monitors

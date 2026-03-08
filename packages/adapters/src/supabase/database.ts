@@ -249,6 +249,31 @@ export class SupabaseDatabase implements IRemoteDatabase {
     return data.map((row: any) => this.rowToEntry(row));
   }
 
+  async semanticSearchAll(
+    userId: string,
+    queryEmbedding: number[],
+    options?: {
+      limit?: number;
+      minSimilarity?: number;
+    }
+  ): Promise<MemoryEntry[]> {
+    const limit = options?.limit || 20;
+    const minSimilarity = options?.minSimilarity || 0.5;
+
+    const { data, error } = await this.client.rpc('match_entries_all', {
+      query_embedding: queryEmbedding,
+      match_user_id: userId,
+      match_threshold: minSimilarity,
+      match_count: limit,
+    });
+
+    if (error) {
+      throw new Error(`Failed to perform cross-project semantic search: ${error.message}`);
+    }
+
+    return data.map((row: any) => this.rowToEntry(row));
+  }
+
   async generateEmbeddings(entryIds: string[]): Promise<void> {
     // Fire-and-forget — edge function handles batching (max 100)
     await this.client.functions.invoke('embed', {

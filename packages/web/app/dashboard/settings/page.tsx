@@ -1,12 +1,10 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/server';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
 import { getPlan, type PlanId } from '@mycontxt/core/plans';
 import { SettingsClient } from './settings-client';
-import Stripe from 'stripe';
 
-async function getSettingsData(stripeSessionId?: string) {
+async function getSettingsData() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/login');
@@ -26,43 +24,7 @@ async function getSettingsData(stripeSessionId?: string) {
 
   const sub = subResult.data;
   const subPlan = (sub?.status === 'active' && sub?.plan_id !== 'free') ? sub.plan_id as PlanId : null;
-  let planId = subPlan || (profile?.plan_id as PlanId) || 'free';
-
-  // Webhook hasn't fired yet — verify directly with Stripe and update DB
-  if (stripeSessionId && planId === 'free' && process.env.STRIPE_SECRET_KEY) {
-    try {
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-        apiVersion: '2024-12-18.acacia' as Stripe.LatestApiVersion,
-      });
-      const checkoutSession = await stripe.checkout.sessions.retrieve(stripeSessionId);
-      if (checkoutSession.payment_status === 'paid' && checkoutSession.subscription) {
-        const sub = await stripe.subscriptions.retrieve(checkoutSession.subscription as string);
-        const priceId = sub.items.data[0].price.id;
-        const priceMap: Record<string, string> = {
-          [process.env.STRIPE_PRO_MONTHLY_PRICE_ID ?? '']: 'pro',
-          [process.env.STRIPE_PRO_ANNUAL_PRICE_ID ?? '']: 'pro',
-          [process.env.STRIPE_TEAM_MONTHLY_PRICE_ID ?? '']: 'team',
-          [process.env.STRIPE_TEAM_ANNUAL_PRICE_ID ?? '']: 'team',
-        };
-        const resolvedPlan = (priceMap[priceId] ?? 'free') as PlanId;
-        if (resolvedPlan !== 'free') {
-          // Use service role to bypass RLS — plan_id must be set by trusted server code only
-          const serviceClient = createServiceClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          );
-          await Promise.all([
-            serviceClient.from('user_profiles').upsert({ id: user.id, plan_id: resolvedPlan }, { onConflict: 'id' }),
-            serviceClient.from('subscriptions').update({ plan_id: resolvedPlan, status: 'active' }).eq('user_id', user.id),
-          ]);
-          planId = resolvedPlan;
-        }
-      }
-    } catch {
-      // Stripe verify failed — fall through with DB value
-    }
-  }
-
+  const planId = subPlan || (profile?.plan_id as PlanId) || 'free';
   const plan = getPlan(planId);
 
   return {
@@ -78,10 +40,10 @@ async function getSettingsData(stripeSessionId?: string) {
   };
 }
 
-export default async function DashboardSettings({ searchParams }: { searchParams: Promise<{ upgraded?: string; session_id?: string }> }) {
+export default async function DashboardSettings({ searchParams }: { searchParams: Promise<{ upgraded?: string }> }) {
   const params = await searchParams;
   const justUpgraded = params.upgraded === 'true';
-  const { user, planId, planName, planPrice, preferences } = await getSettingsData(justUpgraded ? params.session_id : undefined);
+  const { user, planId, planName, planPrice, preferences } = await getSettingsData();
 
   return (
     <SettingsClient

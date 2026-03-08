@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAppDispatch } from '../../../lib/store/hooks';
 import { openEntry } from '../../../lib/store/panel-slice';
-import { useSearchEntriesQuery, useSearchAllQuery } from '../../../lib/store/api';
+import { useSearchEntriesQuery, useSearchAllQuery, useSemanticSearchQuery } from '../../../lib/store/api';
 import { EntryPanel } from '../../components/entry-panel';
 import { usePanelUrl } from '../../../lib/hooks/use-panel-url';
 import type { Project } from '@mycontxt/core';
@@ -35,20 +35,24 @@ export function SearchClient({ userId, projects, planId }: Props) {
 
   usePanelUrl();
 
-  // Cross-project search (all projects)
+  // Semantic search (pro) — covers both single-project and cross-project
+  const { data: semanticResults = [], isFetching: fetchingSemantic } = useSemanticSearchQuery(
+    { query: urlQuery, projectId: urlProject === 'all' ? undefined : urlProject },
+    { skip: !urlQuery || !isProSearch }
+  );
+
+  // FTS fallbacks (free plan)
   const { data: allResults = [], isFetching: fetchingAll } = useSearchAllQuery(
     { userId, query: urlQuery },
-    { skip: !urlQuery || urlProject !== 'all' }
+    { skip: !urlQuery || urlProject !== 'all' || isProSearch }
   );
-
-  // Single-project search
   const { data: projectResults = [], isFetching: fetchingProject } = useSearchEntriesQuery(
     { projectId: urlProject, query: urlQuery, limit: 30 },
-    { skip: !urlQuery || urlProject === 'all' }
+    { skip: !urlQuery || urlProject === 'all' || isProSearch }
   );
 
-  const results = urlProject === 'all' ? allResults : projectResults;
-  const isFetching = fetchingAll || fetchingProject;
+  const results = isProSearch ? semanticResults : (urlProject === 'all' ? allResults : projectResults);
+  const isFetching = fetchingSemantic || fetchingAll || fetchingProject;
 
   useEffect(() => {
     setInputValue(urlQuery);

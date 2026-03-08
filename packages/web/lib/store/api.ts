@@ -163,6 +163,28 @@ export const contxtApi = createApi({
       providesTags: ['Entries'],
     }),
 
+    semanticSearch: builder.query<
+      MemoryEntry[],
+      { query: string; projectId?: string }
+    >({
+      queryFn: async ({ query, projectId }) => {
+        try {
+          const params = new URLSearchParams({ q: query });
+          if (projectId && projectId !== 'all') params.set('project', projectId);
+          const res = await fetch(`/api/search/semantic?${params.toString()}`);
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: 'Search failed' }));
+            return { error: { status: 'CUSTOM_ERROR', error: err.error ?? 'Search failed' } };
+          }
+          const data = await res.json();
+          return { data };
+        } catch (error) {
+          return { error: { status: 'CUSTOM_ERROR', error: String(error) } };
+        }
+      },
+      providesTags: ['Entries'],
+    }),
+
     // ─── Mutations ─────────────────────────────────────────
     createEntry: builder.mutation<MemoryEntry, CreateEntryInput>({
       queryFn: async (input) => {
@@ -270,6 +292,7 @@ export const {
   useGetEntryQuery,
   useSearchEntriesQuery,
   useSearchAllQuery,
+  useSemanticSearchQuery,
   useGetDraftsQuery,
   useGetActivityQuery,
   useGetSessionsQuery,

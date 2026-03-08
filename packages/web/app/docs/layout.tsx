@@ -40,6 +40,11 @@ const navigation = [
       { name: 'pattern', href: '/docs/cli/pattern' },
       { name: 'context', href: '/docs/cli/context' },
       { name: 'push / pull', href: '/docs/cli/sync' },
+      { name: 'auth', href: '/docs/cli/auth' },
+      { name: 'hook', href: '/docs/cli/hook' },
+      { name: 'billing', href: '/docs/cli/billing' },
+      { name: 'status', href: '/docs/cli/status' },
+      { name: 'suggest', href: '/docs/cli/suggest' },
     ],
   },
   {
@@ -49,6 +54,7 @@ const navigation = [
       { name: 'Claude Code', href: '/docs/claude-code' },
       { name: 'Cursor', href: '/docs/cursor' },
       { name: 'GitHub Copilot', href: '/docs/copilot' },
+      { name: 'Windsurf', href: '/docs/windsurf' },
     ],
   },
   {
