@@ -427,7 +427,4 @@ async function main() {
   console.error('Contxt MCP Server running on stdio');
 }
 
-main().catch((error) => {
-  console.error('Fatal error:', error);
-  process.exit(1);
-});
+export { main as startMcpServer };

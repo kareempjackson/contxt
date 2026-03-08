@@ -35,6 +35,9 @@ importers:
       open:
         specifier: ^11.0.0
         version: 11.0.0
+      stripe:
+        specifier: ^17.0.0
+        version: 17.7.0
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.12
@@ -54,12 +57,6 @@ importers:
 
   packages/cli:
     dependencies:
-      '@mycontxt/adapters':
-        specifier: workspace:*
-        version: link:../adapters
-      '@mycontxt/core':
-        specifier: workspace:*
-        version: link:../core
       better-sqlite3:
         specifier: ^11.7.0
         version: 11.10.0
@@ -81,13 +78,28 @@ importers:
       ora:
         specifier: ^8.1.1
         version: 8.2.0
+      stripe:
+        specifier: ^17.0.0
+        version: 17.7.0
       tiktoken:
         specifier: ^1.0.18
         version: 1.0.22
     devDependencies:
+      '@mycontxt/adapters':
+        specifier: workspace:*
+        version: link:../adapters
+      '@mycontxt/core':
+        specifier: workspace:*
+        version: link:../core
+      '@mycontxt/mcp':
+        specifier: workspace:*
+        version: link:../mcp
       '@types/node':
         specifier: ^22.10.5
         version: 22.19.11
+      open:
+        specifier: ^11.0.0
+        version: 11.0.0
       tsup:
         specifier: ^8.3.5
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)

@@ -15,6 +15,11 @@ export async function searchCommand(
   query: string,
   options: SearchOptions
 ): Promise<void> {
+  if (!query || !query.trim()) {
+    error('Please enter a search term.');
+    process.exit(1);
+  }
+
   try {
     const { engine, projectId, db } = await loadProject();
 

@@ -25,13 +25,17 @@ import { rulesCommand } from '../commands/rules.js';
 import { captureCommand } from '../commands/capture.js';
 import { hookCommand } from '../commands/hook.js';
 import { watchCommand } from '../commands/watch.js';
+import { billingCommand } from '../commands/billing.js';
+import { mcpCommand } from '../commands/mcp.js';
+
+declare const __CLI_VERSION__: string;
 
 const program = new Command();
 
 program
   .name('contxt')
   .description('GitHub for AI Context - Persistent memory for AI coding agents')
-  .version('0.1.0');
+  .version(typeof __CLI_VERSION__ !== 'undefined' ? __CLI_VERSION__ : '0.2.0');
 
 // Project commands
 program
@@ -398,6 +402,37 @@ program
   .command('watch:status')
   .description('Show watch daemon status')
   .action(watchCommand.status);
+
+// Billing commands
+const billing = program
+  .command('billing')
+  .description('Manage subscription and billing');
+
+billing
+  .command('status')
+  .description('Show current plan and usage')
+  .action(billingCommand.status);
+
+billing
+  .command('manage')
+  .description('Open Stripe customer portal to update payment or cancel')
+  .action(billingCommand.manage);
+
+billing
+  .command('upgrade')
+  .description('Upgrade to Contxt Pro')
+  .action(billingCommand.upgrade);
+
+billing
+  .command('usage')
+  .description('Show detailed usage breakdown by entry type')
+  .action(billingCommand.usage);
+
+// MCP server command (called by editors via .mcp.json config)
+program
+  .command('mcp')
+  .description('Start the MCP server (used by Cursor, Claude Code, Windsurf)')
+  .action(mcpCommand);
 
 // Parse arguments
 program.parse();

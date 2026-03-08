@@ -117,18 +117,25 @@ function installGitHooks(cwd: string): boolean {
 }
 
 /**
- * Spawn the watch daemon in the background — auto-captures file changes and auto-syncs
+ * Spawn the watch daemon in the background — auto-captures file changes and auto-syncs.
+ * Returns false if the binary is not on PATH yet (e.g. fresh install before shell refresh).
  */
-function startWatchDaemon(cwd: string): void {
+function startWatchDaemon(cwd: string): boolean {
   const pidFile = join(cwd, '.contxt', '.watch.pid');
-  if (existsSync(pidFile)) return; // Already running
+  if (existsSync(pidFile)) return true; // Already running
 
-  const child = spawn('contxt', ['watch', '--daemon'], {
-    detached: true,
-    stdio: 'ignore',
-    cwd,
-  });
-  child.unref();
+  try {
+    const child = spawn('contxt', ['watch', '--daemon'], {
+      detached: true,
+      stdio: 'ignore',
+      cwd,
+    });
+    child.on('error', () => {}); // suppress ENOENT — user can run `contxt watch` manually
+    child.unref();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -246,7 +253,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
     const hooksInstalled = installGitHooks(cwd);
 
     // Start watch daemon in background (auto-sync enabled)
-    startWatchDaemon(cwd);
+    const daemonStarted = startWatchDaemon(cwd);
 
     // Register Claude Code UserPromptSubmit hook for silent context injection
     registerClaudeCodeHook();
@@ -255,7 +262,11 @@ export async function initCommand(options: InitOptions): Promise<void> {
     console.log();
     info('✓ MCP server configured (.mcp.json + .cursor/mcp.json)');
     if (hooksInstalled) info('✓ Git hooks installed (post-commit, pre-push, post-checkout)');
-    info('✓ Watch daemon started (auto-sync enabled)');
+    if (daemonStarted) {
+      info('✓ Watch daemon started (auto-sync enabled)');
+    } else {
+      info('ℹ Watch daemon could not start — run `contxt watch` manually');
+    }
     info('✓ Claude Code context hook registered');
     if (mdDrafts > 0) info(`✓ ${mdDrafts} decision${mdDrafts !== 1 ? 's' : ''}/pattern${mdDrafts !== 1 ? 's' : ''} inferred from existing markdown files`);
     console.log();

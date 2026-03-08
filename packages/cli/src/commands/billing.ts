@@ -10,7 +10,7 @@ import open from 'open';
 import { PLANS, getPlan, type PlanId } from '@mycontxt/core/plans';
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
 import { SupabaseDatabase } from '@mycontxt/adapters/supabase';
-import { StripeBilling } from '@mycontxt/adapters/stripe/billing';
+import { StripeBilling } from '../../../adapters/src/stripe/billing.js';
 import { getDbPath } from '../utils/project.js';
 import { getSupabaseConfig } from '../config.js';
 import { error as outputError, header } from '../utils/output.js';
