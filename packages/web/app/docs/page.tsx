@@ -121,25 +121,6 @@ export default function DocsIntroduction() {
               </div>
             </div>
           </div>
-
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-violet text-white flex items-center justify-center font-bold text-sm">
-              4
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-text-0 text-[17px] mb-2">Set up MCP integration</h3>
-              <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto">
-                <pre className="font-mono text-[13.5px] leading-[1.8]">
-                  <code className="text-white/40">$ </code>
-                  <code className="text-white/90">contxt mcp install</code>
-                  {'\n'}
-                  <code className="text-green">✓ Added to Claude Code config</code>
-                  {'\n'}
-                  <code className="text-white/25">Restart Claude Code to enable</code>
-                </pre>
-              </div>
-            </div>
-          </div>
         </div>
       </FadeUp>
 
