@@ -375,3 +375,58 @@ export async function confirmDraft(args: ConfirmDraftArgs): Promise<string> {
     await db.close();
   }
 }
+
+/**
+ * Save a raw user prompt.
+ * Called automatically at the start of every conversation turn to capture
+ * what the developer is working on — no AI judgment required.
+ */
+interface SavePromptArgs {
+  prompt: string;
+  conversationId?: string;
+  projectPath?: string;
+}
+
+export async function savePrompt(args: SavePromptArgs): Promise<string> {
+  const projectPath = args.projectPath || process.cwd();
+  const dbPath = getDbPath(projectPath);
+
+  const db = new SQLiteDatabase(dbPath);
+  await db.initialize();
+
+  try {
+    const project = await db.getProjectByPath(projectPath);
+    if (!project) {
+      return JSON.stringify({ status: 'error', message: 'No Contxt project found.' });
+    }
+
+    // Check usage limits (graceful degradation — never block the AI)
+    const gateCheck = await checkEntryAllowed(db, project.id);
+    if (!gateCheck.allowed) {
+      return JSON.stringify({
+        status: 'limit_reached',
+        message: `Prompt noted (not saved - usage limit reached).${gateCheck.message}`,
+      });
+    }
+
+    const entry = await db.createEntry({
+      projectId: project.id,
+      type: 'document',
+      title: args.prompt.substring(0, 80),
+      content: args.prompt,
+      metadata: {
+        source: 'mcp:prompt',
+        conversationId: args.conversationId,
+        capturedAt: new Date().toISOString(),
+      },
+      status: 'active',
+    });
+
+    return JSON.stringify({
+      status: 'captured',
+      id: entry.id,
+    });
+  } finally {
+    await db.close();
+  }
+}

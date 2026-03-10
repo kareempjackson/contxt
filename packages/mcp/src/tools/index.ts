@@ -14,13 +14,14 @@ import {
   updateSession,
   getDrafts,
   confirmDraft,
+  savePrompt,
 } from './auto-capture.js';
 
 // Export suggest-context
 export { suggestContext };
 
 // Export auto-capture tools
-export { autoCaptureDecision, autoCapturePattern, captureDiscussion, updateSession, getDrafts, confirmDraft };
+export { autoCaptureDecision, autoCapturePattern, captureDiscussion, updateSession, getDrafts, confirmDraft, savePrompt };
 
 /**
  * Get project context - Overview of project

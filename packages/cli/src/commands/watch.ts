@@ -3,7 +3,8 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, unlinkSync, openSync, appendFileSync } from 'fs';
-import { join, relative } from 'path';
+import { join, relative, basename } from 'path';
+import { createHash } from 'crypto';
 import { spawn } from 'child_process';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
@@ -254,19 +255,42 @@ async function runWatcher(options: WatchOptions = {}) {
   });
 
   // Process a single .md file immediately — no debounce
+  // Always saves raw content as a document entry, then optionally also extracts
+  // structured decisions/patterns via OpenAI (additive, never blocks the raw save).
   async function inferMarkdownFile(filePath: string) {
     if (filePath === '.contxt/rules.md') return;
     try {
       const absPath = join(cwd, filePath);
       if (!existsSync(absPath)) return;
       const content = readFileSync(absPath, 'utf-8');
-      const inferred = await inferFromMarkdown(content, filePath);
-      if (inferred.length === 0) return;
+      if (!content.trim()) return;
 
       const existing = await db.listEntries({ projectId: project.id, branch });
       const hashes = new Set(existing.filter((e) => e.metadata.hash).map((e) => e.metadata.hash));
-      let saved = 0;
 
+      // Always save raw content as a document entry (hash-deduped)
+      const rawHash = createHash('sha256')
+        .update(`doc:${filePath}:${content.substring(0, 200)}`)
+        .digest('hex')
+        .substring(0, 16);
+
+      if (!hashes.has(rawHash)) {
+        const title = basename(filePath, '.md').replace(/[-_]/g, ' ');
+        await db.createEntry({
+          projectId: project.id,
+          type: 'document',
+          title,
+          content: content.substring(0, 4000),
+          metadata: { source: 'watch:md', file: filePath, hash: rawHash },
+          status: 'active',
+        });
+        hashes.add(rawHash);
+        log('markdown', `${filePath} → saved`);
+      }
+
+      // Also try structured inference via OpenAI (additive)
+      const inferred = await inferFromMarkdown(content, filePath);
+      let structured = 0;
       for (const entry of inferred) {
         if (!hashes.has(entry.hash)) {
           await db.createEntry({
@@ -277,12 +301,12 @@ async function runWatcher(options: WatchOptions = {}) {
             metadata: { source: 'md:inferred', file: entry.file, hash: entry.hash },
             status: 'draft',
           });
-          saved++;
+          hashes.add(entry.hash);
+          structured++;
         }
       }
-
-      if (saved > 0) {
-        log('markdown', `${filePath} → +${saved} draft${saved !== 1 ? 's' : ''}`);
+      if (structured > 0) {
+        log('markdown', `${filePath} → +${structured} structured draft${structured !== 1 ? 's' : ''}`);
       }
     } catch {
       // Ignore errors for individual files
@@ -342,6 +366,27 @@ async function runWatcher(options: WatchOptions = {}) {
           // Skip rules.md — handled by rulesWatcher
           if (file === '.contxt/rules.md' || file.endsWith('/.contxt/rules.md')) continue;
 
+          // Always save raw content as a document entry (hash-deduped)
+          const rawHash = createHash('sha256')
+            .update(`doc:${file}:${content.substring(0, 200)}`)
+            .digest('hex')
+            .substring(0, 16);
+
+          if (!hashes.has(rawHash)) {
+            const title = basename(file, '.md').replace(/[-_]/g, ' ');
+            await db.createEntry({
+              projectId: project.id,
+              type: 'document',
+              title,
+              content: content.substring(0, 4000),
+              metadata: { source: 'watch:md', file, hash: rawHash },
+              status: 'active',
+            });
+            hashes.add(rawHash);
+            newDrafts++;
+          }
+
+          // Also try structured inference via OpenAI (additive)
           const inferred = await inferFromMarkdown(content, file);
           for (const entry of inferred) {
             if (!hashes.has(entry.hash)) {

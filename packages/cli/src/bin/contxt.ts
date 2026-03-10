@@ -28,6 +28,7 @@ import { watchCommand } from '../commands/watch.js';
 import { billingCommand } from '../commands/billing.js';
 import { mcpCommand } from '../commands/mcp.js';
 import { listCommand, deleteCommand } from '../commands/entries.js';
+import { addCommand } from '../commands/add.js';
 
 declare const __CLI_VERSION__: string;
 
@@ -63,6 +64,13 @@ program
   .description('Delete an entry by ID (or short ID prefix)')
   .option('--force', 'Skip confirmation prompt')
   .action(deleteCommand);
+
+program
+  .command('add <text>')
+  .description('Capture a decision, pattern, or context — type is auto-inferred')
+  .option('-t, --type <type>', 'Override type (decision, pattern, context, document)')
+  .option('--tags <tags...>', 'Tags to apply')
+  .action(addCommand);
 
 // Decision commands
 const decision = program
