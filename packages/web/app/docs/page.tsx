@@ -105,18 +105,17 @@ export default function DocsIntroduction() {
               3
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-text-0 text-[17px] mb-2">Add your first decision</h3>
+              <h3 className="font-semibold text-text-0 text-[17px] mb-2">Capture your first entry</h3>
               <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto">
                 <pre className="font-mono text-[13.5px] leading-[1.8]">
                   <code className="text-white/40">$ </code>
-                  <code className="text-white/90">contxt decision add \</code>
-                  {'\n  '}
-                  <code className="text-[#C4B5FD]">--title</code>{' '}
-                  <code className="text-[#FCA5A5]">"Use Prisma for database"</code> \{'\n  '}
-                  <code className="text-[#C4B5FD]">--rationale</code>{' '}
-                  <code className="text-[#FCA5A5]">"Type-safe queries, great DX"</code>
+                  <code className="text-white/90">{'contxt add "We\'re using Prisma — type-safe queries, great DX"'}</code>
+                  {'\n\n'}
+                  <code className="text-white/50">  Classified as: </code><code className="text-[#6EE7B7]">decision</code>
                   {'\n'}
-                  <code className="text-green">✓ Decision added</code>
+                  <code className="text-white/50">  Save as decision? (Y/n/type) › </code>
+                  {'\n'}
+                  <code className="text-green">  ✓ Decision saved</code>
                 </pre>
               </div>
             </div>

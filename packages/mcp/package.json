@@ -1,6 +1,6 @@
 {
   "name": "@mycontxt/mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "bin": {
     "contxt-mcp": "./dist/server.js"
@@ -13,7 +13,7 @@
   "dependencies": {
     "@mycontxt/core": "workspace:*",
     "@mycontxt/adapters": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.0.4",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "tiktoken": "^1.0.18"
   },
   "devDependencies": {

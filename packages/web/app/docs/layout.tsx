@@ -35,6 +35,7 @@ const navigation = [
   {
     title: 'CLI Reference',
     items: [
+      { name: 'add (smart capture)', href: '/docs/cli/add' },
       { name: 'init', href: '/docs/cli/init' },
       { name: 'decision', href: '/docs/cli/decision' },
       { name: 'pattern', href: '/docs/cli/pattern' },

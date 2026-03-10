@@ -70,11 +70,26 @@ export default function DocsQuickStart() {
             </div>
             <div className="flex-1">
               <h2 className="font-serif text-[32px] font-normal leading-[1.2] tracking-tight text-text-0 mb-4">
-                Log Your First Decision
+                Capture Your First Entry
               </h2>
+              <p className="text-[17px] text-text-1 leading-[1.8] mb-4">
+                The fastest way — type it in plain English and let Contxt classify it:
+              </p>
               <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto mb-4">
-                <code className="font-mono text-[13.5px] text-white/90">contxt decision add</code>
+                <pre className="font-mono text-[13.5px] leading-[1.8]">
+                  <code className="text-white/40">$ </code>
+                  <code className="text-white/90">{'contxt add "We\'re using Stripe for billing — better API and webhook reliability"'}</code>
+                  {'\n\n'}
+                  <code className="text-white/50">  Classified as: </code><code className="text-[#6EE7B7]">decision</code>
+                  {'\n'}
+                  <code className="text-white/50">  Save as decision? (Y/n/type) › </code>
+                  {'\n\n'}
+                  <code className="text-[#6EE7B7]">  ✓ Decision saved: "We're using Stripe for billing..."</code>
+                </pre>
               </div>
+              <p className="text-[15px] text-text-2 leading-[1.7] mb-4">
+                Or use the typed command for more fields (alternatives, category, consequences):
+              </p>
               <div className="bg-bg-dark rounded-lg p-4 overflow-x-auto">
                 <pre className="font-mono text-[13.5px] leading-[1.8] text-white/75">
                   {'? Decision: Use Stripe for billing\n'}
