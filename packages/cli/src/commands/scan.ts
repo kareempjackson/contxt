@@ -116,27 +116,36 @@ export async function scanCommand(options: ScanOptions = {}) {
         .map((e) => [e.metadata.hash, e])
     );
 
+    // Secondary lookup by file:line — catches edits where content (and thus hash) changed
+    const existingByLocation = new Map(
+      existingEntries
+        .filter((e) => e.metadata.source === 'scan' && e.metadata.file && e.metadata.line)
+        .map((e) => [`${e.metadata.file}:${e.metadata.line}`, e])
+    );
+
     // Categorize comments
     const newComments: ScanComment[] = [];
-    const updatedComments: ScanComment[] = [];
+    const updatedComments: Array<{ comment: ScanComment; existingId: string }> = [];
     const unchangedComments: ScanComment[] = [];
 
     for (const comment of allComments) {
       const existing = existingHashes.get(comment.hash);
-      if (!existing) {
-        newComments.push(comment);
+      if (existing) {
+        // Exact hash match — unchanged
+        unchangedComments.push(comment);
+        existingHashes.delete(comment.hash);
+        existingByLocation.delete(`${comment.file}:${comment.line}`);
       } else {
-        // Check if content actually changed
-        const entry = scanCommentToEntry(comment, project.id);
-        if (
-          existing.title !== entry.title ||
-          existing.content !== entry.content
-        ) {
-          updatedComments.push(comment);
+        // Hash miss — check if same location (annotation was edited in place)
+        const locationKey = `${comment.file}:${comment.line}`;
+        const existingAtLocation = existingByLocation.get(locationKey);
+        if (existingAtLocation) {
+          updatedComments.push({ comment, existingId: existingAtLocation.id });
+          existingHashes.delete(existingAtLocation.metadata.hash);
+          existingByLocation.delete(locationKey);
         } else {
-          unchangedComments.push(comment);
+          newComments.push(comment);
         }
-        existingHashes.delete(comment.hash); // Mark as still present
       }
     }
 
@@ -158,7 +167,7 @@ export async function scanCommand(options: ScanOptions = {}) {
 
     if (updatedComments.length > 0) {
       console.log(chalk.bold('UPDATED'));
-      for (const comment of updatedComments) {
+      for (const { comment } of updatedComments) {
         const icon = getTypeIcon(comment.tag);
         console.log(
           `  ${chalk.yellow('~')} ${icon} ${chalk.bold(comment.title.substring(0, 50))}  ${chalk.gray(comment.file + ':' + comment.line)}`
@@ -198,34 +207,33 @@ export async function scanCommand(options: ScanOptions = {}) {
       return;
     }
 
-    // Save new and updated code-scanned entries as drafts
-    const toSave = [...newComments, ...updatedComments];
-    if (toSave.length > 0) {
+    // Save new and updated code-scanned entries
+    const totalToSave = newComments.length + updatedComments.length;
+    if (totalToSave > 0) {
       const saveSpinner = ora('Saving entries...').start();
 
-      for (const comment of toSave) {
+      for (const comment of newComments) {
         const entry = scanCommentToEntry(comment, project.id);
-        const existing = existingHashes.get(comment.hash);
-
-        if (existing) {
-          await db.updateEntry(existing.id, {
-            title: entry.title,
-            content: entry.content,
-            metadata: entry.metadata,
-          });
-        } else {
-          await db.createEntry({
-            projectId: project.id,
-            type: entry.type,
-            title: entry.title,
-            content: entry.content,
-            metadata: entry.metadata,
-            status: 'active',
-          });
-        }
+        await db.createEntry({
+          projectId: project.id,
+          type: entry.type,
+          title: entry.title,
+          content: entry.content,
+          metadata: entry.metadata,
+          status: 'active',
+        });
       }
 
-      saveSpinner.succeed(`Saved ${toSave.length} entries.`);
+      for (const { comment, existingId } of updatedComments) {
+        const entry = scanCommentToEntry(comment, project.id);
+        await db.updateEntry(existingId, {
+          title: entry.title,
+          content: entry.content,
+          metadata: entry.metadata,
+        });
+      }
+
+      saveSpinner.succeed(`Saved ${totalToSave} entries.`);
     }
 
     // Save new inferred entries from markdown
@@ -258,7 +266,7 @@ export async function scanCommand(options: ScanOptions = {}) {
     }
 
     // Show next steps
-    if (!options.autoConfirm && toSave.length > 0) {
+    if (!options.autoConfirm && totalToSave > 0) {
       console.log('');
       console.log(chalk.cyan(`Run ${chalk.bold('contxt review')} to confirm drafts.`));
     }

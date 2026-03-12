@@ -1,6 +1,6 @@
 {
   "name": "@mycontxt/cli",
-  "version": "0.2.8",
+  "version": "0.2.10",
   "type": "module",
   "bin": {
     "contxt": "./dist/contxt.js"

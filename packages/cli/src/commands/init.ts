@@ -17,6 +17,10 @@ const CLAUDE_MD_TEMPLATE = `# Contxt — Active Context Capture
 
 This project uses [Contxt](https://mycontxt.co) (MCP) to automatically capture technical decisions and patterns from your conversations.
 
+## At the Start of Each Session
+
+Before responding to any task, call \`suggest_context\` with the task description and active files to load relevant project decisions and patterns. This gives you the context to make consistent, informed suggestions.
+
 ## Your Role
 
 During every conversation in this project, actively capture knowledge using the Contxt MCP tools:
@@ -149,6 +153,32 @@ async function startWatchDaemon(cwd: string): Promise<boolean> {
 }
 
 /**
+ * Register the Contxt MCP server in ~/.gemini/antigravity/mcp_config.json
+ * for Google's Antigravity IDE auto-discovery.
+ */
+function registerAntigravityMcp(): void {
+  const antigravityDir = join(homedir(), '.gemini', 'antigravity');
+  const configPath = join(antigravityDir, 'mcp_config.json');
+
+  let config: Record<string, any> = { mcpServers: {} };
+  if (existsSync(configPath)) {
+    try {
+      config = JSON.parse(readFileSync(configPath, 'utf-8'));
+    } catch {
+      // Malformed — start fresh
+    }
+  }
+
+  if (!config.mcpServers) config.mcpServers = {};
+
+  if (!config.mcpServers.contxt) {
+    config.mcpServers.contxt = { command: 'contxt', args: ['mcp'], env: {} };
+    mkdirSync(antigravityDir, { recursive: true });
+    writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+  }
+}
+
+/**
  * Register a UserPromptSubmit hook in ~/.claude/settings.json so context
  * is automatically injected before every Claude Code prompt.
  */
@@ -268,9 +298,12 @@ export async function initCommand(options: InitOptions): Promise<void> {
     // Register Claude Code UserPromptSubmit hook for silent context injection
     registerClaudeCodeHook();
 
+    // Register Contxt MCP server in Antigravity IDE config
+    registerAntigravityMcp();
+
     success(`Initialized Contxt project: ${project.name}`);
     console.log();
-    info('✓ MCP server configured (.mcp.json + .cursor/mcp.json)');
+    info('✓ MCP server configured (.mcp.json + .cursor/mcp.json + Antigravity)');
     if (hooksInstalled) info('✓ Git hooks installed (post-commit, pre-push, post-checkout)');
     if (daemonStarted) {
       info('✓ Watch daemon started (auto-sync enabled)');

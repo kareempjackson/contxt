@@ -457,7 +457,7 @@ billing
 // MCP server command (called by editors via .mcp.json config)
 program
   .command('mcp')
-  .description('Start the MCP server (used by Cursor, Claude Code, Windsurf)')
+  .description('Start the MCP server (used by Cursor, Claude Code, Windsurf, Antigravity)')
   .action(mcpCommand);
 
 // Parse arguments
