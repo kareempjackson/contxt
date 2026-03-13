@@ -43,9 +43,13 @@ function getRemoteDb(): SupabaseDatabase | null {
     const content = readFileSync(AUTH_FILE, 'utf-8');
     const auth: AuthData = JSON.parse(content);
 
+    const supabaseUrl = process.env.CONTXT_SUPABASE_URL || '';
+    const supabaseKey = process.env.CONTXT_SUPABASE_ANON_KEY || '';
+    if (!supabaseUrl) return null;
+
     return new SupabaseDatabase({
-      url: process.env.SUPABASE_URL || '',
-      anonKey: process.env.SUPABASE_ANON_KEY || '',
+      url: supabaseUrl,
+      anonKey: supabaseKey,
       accessToken: auth.accessToken,
     });
   } catch {

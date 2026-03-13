@@ -438,6 +438,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
+// Prevent unhandled rejections / exceptions from killing the MCP process.
+// The server must stay alive even if a background task (e.g. Supabase token
+// refresh) fails — crashing causes "connection closed: EOF" in the IDE.
+process.on('unhandledRejection', (reason) => {
+  console.error('[contxt-mcp] unhandled rejection (server kept alive):', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[contxt-mcp] uncaught exception (server kept alive):', err);
+});
+
 // Start server with stdio transport
 async function main() {
   const transport = new StdioServerTransport();
