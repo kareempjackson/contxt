@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Review — Approve Captured Drafts',
+  description: 'Review and approve automatically captured decisions and patterns before they become permanent memory with contxt review.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/review' },
+};
 
 export default function ReviewPage() {
   return (

@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'MCP Setup',
+  description: 'Connect Contxt to any MCP-compatible AI agent. Auto-configure Cursor, Claude Code, Windsurf, and Antigravity with a single command.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/mcp' },
+};
 
 export default function DocsMCPSetup() {
   return (

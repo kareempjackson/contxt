@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Cursor Integration',
+  description: 'Add persistent memory to Cursor AI. Contxt connects via MCP so Cursor remembers your architecture decisions and code patterns across sessions.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/cursor' },
+};
 
 export default function DocsCursor() {
   return (

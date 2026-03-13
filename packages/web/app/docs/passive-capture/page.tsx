@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Passive Capture — Auto-Save Context from AI Sessions',
+  description: 'Contxt silently captures architectural decisions and patterns during AI conversations and queues them as drafts for your review.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/passive-capture' },
+};
 
 export default function PassiveCapturePage() {
   return (

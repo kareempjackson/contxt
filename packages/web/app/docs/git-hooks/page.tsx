@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Git Hooks — Auto-Capture on Commit',
+  description: 'Install Contxt git hooks to automatically capture context on every commit, push, and branch switch without any manual effort.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/git-hooks' },
+};
 
 export default function GitHooksPage() {
   return (

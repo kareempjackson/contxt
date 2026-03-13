@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Memory Types',
+  description: 'Learn about the different types of memory Contxt stores: architectural decisions, code patterns, active context, and session history.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/memory-types' },
+};
 
 export default function DocsMemoryTypes() {
   return (

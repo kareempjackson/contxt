@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'GitHub Copilot Integration',
+  description: 'Add persistent memory to GitHub Copilot. Contxt connects via MCP so Copilot retains architectural decisions and patterns across sessions.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/copilot' },
+};
 
 export default function DocsCopilot() {
   return (

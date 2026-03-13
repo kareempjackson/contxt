@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Google Antigravity Integration',
+  description: "Add persistent memory to Google's Antigravity IDE. Contxt connects via MCP and auto-configures on contxt init.",
+  alternates: { canonical: 'https://mycontxt.ai/docs/antigravity' },
+};
 
 export default function DocsAntigravity() {
   return (

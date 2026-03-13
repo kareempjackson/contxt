@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Windsurf Integration',
+  description: 'Add persistent memory to Windsurf. Contxt connects via MCP so Windsurf remembers your architectural decisions and patterns across every session.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/windsurf' },
+};
 
 export default function DocsWindsurf() {
   return (

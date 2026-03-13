@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Capture — Manually Save Decisions & Patterns',
+  description: 'Manually capture architectural decisions and code patterns using contxt add or the MCP tools so your AI never forgets them.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/capture' },
+};
 
 export default function CapturePage() {
   return (

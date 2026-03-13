@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Sync — Share Memory Across Your Team',
+  description: 'Use contxt sync to push and pull project memory to the cloud. Every team member and AI agent shares the same decisions and patterns.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/sync' },
+};
 
 export default function DocsSync() {
   return (

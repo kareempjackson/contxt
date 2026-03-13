@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Installation',
+  description: 'Install the Contxt CLI via npm. Works with Claude Code, Cursor, Windsurf, Copilot, and any MCP-compatible AI coding agent.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/installation' },
+};
 
 export default function DocsInstallation() {
   return (

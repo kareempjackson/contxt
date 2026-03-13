@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Claude Code Integration',
+  description: 'Give Claude Code persistent project memory with Contxt. Automatically captures decisions, patterns, and context across every session.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/claude-code' },
+};
 
 export default function DocsClaudeCode() {
   return (

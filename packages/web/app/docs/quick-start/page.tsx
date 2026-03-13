@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Quick Start',
+  description: 'Get Contxt running in under 2 minutes. Install, run contxt init, and give your AI coding agent persistent project memory.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/quick-start' },
+};
 
 export default function DocsQuickStart() {
   return (

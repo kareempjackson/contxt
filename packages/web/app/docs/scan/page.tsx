@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Scan — Extract Context from Code Comments',
+  description: 'Use contxt scan to extract @decision and @pattern annotations from your codebase and store them as searchable memory.',
+  alternates: { canonical: 'https://mycontxt.ai/docs/scan' },
+};
 
 export default function ScanPage() {
   return (

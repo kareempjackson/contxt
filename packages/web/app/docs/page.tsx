@@ -1,4 +1,11 @@
+import type { Metadata } from 'next';
 import { FadeUp } from '../components/FadeUp';
+
+export const metadata: Metadata = {
+  title: 'Introduction',
+  description: 'Give your AI coding agents persistent, versioned, project-scoped memory. Stop repeating yourself — start shipping faster.',
+  alternates: { canonical: 'https://mycontxt.ai/docs' },
+};
 
 export default function DocsIntroduction() {
   return (
