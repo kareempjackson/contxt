@@ -26,6 +26,9 @@ coverage/
 # Local memocore data
 .memocore/
 
+.requirements/
+requirements/
+
 # Logs
 *.log
 npm-debug.log*
