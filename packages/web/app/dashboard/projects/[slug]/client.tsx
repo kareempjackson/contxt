@@ -270,12 +270,48 @@ export function ProjectDetailClient({ project, planId }: ProjectDetailClientProp
               <code className="font-mono text-[12px] bg-black/[0.04] px-1.5 py-0.5 rounded">contxt watch</code>.
             </div>
           )}
-          {sessions.map((s) => (
-            <div key={s.id} className="px-4 py-3.5 bg-white rounded-[12px] shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-              <div className="text-[13.5px] font-semibold text-text-0 mb-1">{s.title}</div>
-              <div className="text-[12px] text-text-3">{timeAgo(s.createdAt)}</div>
+          {sessions.length > 0 && (
+            <div className="mb-3 px-1 text-[12px] text-text-3">
+              Session snapshots and events are stored locally. Run{' '}
+              <code className="font-mono bg-black/[0.04] px-1.5 py-0.5 rounded">contxt sessions</code> for full event history.
             </div>
-          ))}
+          )}
+          {sessions.map((s) => {
+            const meta = s.metadata || {};
+            const isActive = !meta.endedAt;
+            const hasSnapshot = !!meta.latestSnapshot;
+            const durationMs = meta.endedAt && meta.startedAt
+              ? new Date(meta.endedAt).getTime() - new Date(meta.startedAt).getTime()
+              : null;
+            const durationLabel = durationMs !== null
+              ? durationMs < 3600000
+                ? `${Math.round(durationMs / 60000)}m`
+                : `${Math.floor(durationMs / 3600000)}h ${Math.round((durationMs % 3600000) / 60000)}m`
+              : null;
+
+            return (
+              <div
+                key={s.id}
+                onClick={() => dispatch(openEntry(s.id))}
+                className="px-4 py-3.5 bg-white rounded-[12px] shadow-[0_1px_2px_rgba(0,0,0,0.03)] cursor-pointer hover:shadow-[0_2px_12px_rgba(0,0,0,0.05)] hover:-translate-y-[0.5px] transition-all"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="text-[13.5px] font-semibold text-text-0 flex-1 truncate">{s.title}</div>
+                  {isActive && (
+                    <span className="font-mono text-[9.5px] font-semibold text-green bg-green/10 px-2 py-0.5 rounded-full flex-shrink-0">active</span>
+                  )}
+                  {hasSnapshot && (
+                    <span className="font-mono text-[9.5px] font-semibold text-blue bg-blue/10 px-2 py-0.5 rounded-full flex-shrink-0">snapshot</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 text-[11.5px] text-text-3">
+                  <span>{timeAgo(s.createdAt)}</span>
+                  {durationLabel && <span>{durationLabel}</span>}
+                  {meta.feature && <span className="truncate">{meta.feature}</span>}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

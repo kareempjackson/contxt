@@ -4,7 +4,7 @@
  */
 
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
-import { rankEntries, fitToBudget, buildContext } from '@mycontxt/core';
+import { rankEntries, fitToBudget, buildContext, countEntryTokens } from '@mycontxt/core';
 import type { SuggestOptions } from '@mycontxt/core';
 import { getDbPath } from '../utils/project.js';
 
@@ -61,13 +61,42 @@ export async function suggestContext(args: SuggestContextArgs): Promise<string> 
     }
 
     // Fit within token budget
-    const fitted = fitToBudget(ranked, options.maxTokens);
+    const fitted = fitToBudget(ranked, options.maxTokens!);
+
+    // Record retrieval counts for analytics
+    try {
+      db.recordRetrievals(fitted.map((r) => r.entry.id));
+    } catch {
+      // Non-critical — don't block response
+    }
+
+    // Record metrics for contxt stats
+    try {
+      const totalTokens = ranked.reduce((s, r) => s + countEntryTokens(r.entry), 0);
+      const returnedTokens = fitted.reduce((s, r) => s + countEntryTokens(r.entry), 0);
+      db.insertMetric('suggest', {
+        totalEntries: ranked.length,
+        returnedEntries: fitted.length,
+        totalTokens,
+        returnedTokens,
+        tokenSavingsPct: totalTokens > 0 ? Math.round((1 - returnedTokens / totalTokens) * 100) : 0,
+      });
+    } catch {
+      // Non-critical
+    }
 
     // Build formatted context
     const context = buildContext(fitted, {
       includeReasons: true,
       includeStats: true,
     });
+
+    // Append footer if budget was applied and entries were trimmed
+    if (args.maxTokens !== undefined && fitted.length < ranked.length) {
+      const totalTokens = ranked.reduce((s, r) => s + countEntryTokens(r.entry), 0);
+      const returnedTokens = fitted.reduce((s, r) => s + countEntryTokens(r.entry), 0);
+      return context + `\n--- Returned ${fitted.length} of ${ranked.length} matching entries (~${returnedTokens} tokens). Increase max_tokens or narrow query for more.`;
+    }
 
     return context;
   } finally {

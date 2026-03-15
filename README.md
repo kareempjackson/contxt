@@ -138,8 +138,10 @@ contxt sync
 ### Project Management
 
 ```bash
-contxt init [--name <name>]          # Initialize project
-contxt status                         # Show project status
+contxt init [--name <name>]                                     # Initialize project
+contxt init --platforms claude-code,gemini,vscode-copilot,codex # Configure specific platforms
+contxt init --check                                             # Show platform configuration status
+contxt status                                                   # Show project status
 ```
 
 ### Memory Management
@@ -171,6 +173,11 @@ contxt session start --feature <feature>
 contxt session end [--summary <summary>]
 contxt session list
 contxt session current
+
+# Session history & compaction survival
+contxt sessions                          # List recent sessions with event counts
+contxt sessions show <session-id>        # Show events for a session
+contxt sessions resume                   # Print resume snapshot for the last session
 ```
 
 ### Search & Retrieval
@@ -220,6 +227,13 @@ contxt pull [--force] [--dry-run]
 contxt sync [--force] [--dry-run]
 ```
 
+### Analytics & Diagnostics
+
+```bash
+contxt stats [--days <n>] [--export json]   # Token efficiency, sessions, most retrieved, stale entries
+contxt diff [--since <timestamp>] [--days <n>] [--json]  # Context changes since last session
+```
+
 ### Export / Import
 
 ```bash
@@ -229,7 +243,19 @@ contxt import --file <file> [--merge]
 
 ## MCP Integration
 
-Contxt exposes 6 tools to AI agents via the Model Context Protocol. These are automatically configured when you run `contxt init`.
+Contxt exposes tools to AI agents via the Model Context Protocol. These are automatically configured when you run `contxt init`.
+
+**Retrieval**
+
+| Tool | Description |
+|---|---|
+| `suggest_context` | Smart relevance-ranked context retrieval. Accepts `max_tokens` to limit response size. |
+| `get_decisions` | Get architectural decisions. Accepts `max_tokens`. |
+| `get_patterns` | Get code patterns and conventions. Accepts `max_tokens`. |
+| `search_memory` | Full-text search across all entries. Accepts `max_tokens`. |
+| `get_project_context` | Project overview with stack, config, and entry counts. |
+
+**Capture**
 
 | Tool | Description |
 |---|---|
@@ -239,6 +265,21 @@ Contxt exposes 6 tools to AI agents via the Model Context Protocol. These are au
 | `contxt_update_session` | Update the current session summary |
 | `contxt_get_drafts` | List all pending draft captures for review |
 | `contxt_confirm_draft` | Confirm and promote a draft to memory |
+
+**Session Continuity (compaction survival)**
+
+| Tool | Description |
+|---|---|
+| `contxt_session_event` | Log a notable event (decision_made, file_edited, task_completed, error_hit) |
+| `contxt_session_snapshot` | Build a compact resume of the current session state |
+| `contxt_session_resume` | Resume context after compaction — loads the latest snapshot |
+
+**Analytics**
+
+| Tool | Description |
+|---|---|
+| `contxt_stats` | Token efficiency, session counts, most retrieved entries, stale entries |
+| `contxt_diff` | What decisions and patterns changed since the last session |
 
 ### How It Works
 

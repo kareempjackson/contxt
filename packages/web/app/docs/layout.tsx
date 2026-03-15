@@ -46,6 +46,9 @@ const navigation = [
       { name: 'billing', href: '/docs/cli/billing' },
       { name: 'status', href: '/docs/cli/status' },
       { name: 'suggest', href: '/docs/cli/suggest' },
+      { name: 'stats', href: '/docs/cli/stats' },
+      { name: 'diff', href: '/docs/cli/diff' },
+      { name: 'sessions', href: '/docs/cli/sessions' },
     ],
   },
   {

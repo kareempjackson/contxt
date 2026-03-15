@@ -38,7 +38,24 @@ export class SQLiteDatabase implements ILocalDatabase {
     const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf-8');
     this.db.exec(schema);
 
+    // Run column migrations (ignore errors for existing columns)
+    this.runMigrations();
+
     this.initialized = true;
+  }
+
+  private runMigrations(): void {
+    const migrations = [
+      `ALTER TABLE memory_entries ADD COLUMN last_retrieved_at TEXT`,
+      `ALTER TABLE memory_entries ADD COLUMN retrieve_count INTEGER NOT NULL DEFAULT 0`,
+    ];
+    for (const migration of migrations) {
+      try {
+        this.db.exec(migration);
+      } catch {
+        // Column already exists — ignore
+      }
+    }
   }
 
   async close(): Promise<void> {
@@ -612,6 +629,180 @@ export class SQLiteDatabase implements ILocalDatabase {
     this.db.prepare(
       'INSERT OR REPLACE INTO plan_cache (user_id, plan_id, fetched_at) VALUES (?, ?, ?)'
     ).run(userId, planId, Date.now());
+  }
+
+  // ==================
+  // Session Events (Feature 2)
+  // ==================
+
+  insertSessionEvent(event: {
+    sessionId: string;
+    eventType: string;
+    summary: string;
+    relatedEntryIds?: string[];
+  }): void {
+    this.db.prepare(`
+      INSERT INTO session_events (session_id, event_type, summary, related_entry_ids, timestamp)
+      VALUES (?, ?, ?, ?, datetime('now'))
+    `).run(
+      event.sessionId,
+      event.eventType,
+      event.summary,
+      event.relatedEntryIds ? JSON.stringify(event.relatedEntryIds) : null
+    );
+  }
+
+  getSessionEvents(sessionId: string): Array<{
+    id: number;
+    sessionId: string;
+    eventType: string;
+    summary: string;
+    relatedEntryIds: string[];
+    timestamp: string;
+  }> {
+    const rows = this.db.prepare(
+      'SELECT * FROM session_events WHERE session_id = ? ORDER BY timestamp ASC'
+    ).all(sessionId) as any[];
+    return rows.map((r) => ({
+      id: r.id,
+      sessionId: r.session_id,
+      eventType: r.event_type,
+      summary: r.summary,
+      relatedEntryIds: r.related_entry_ids ? JSON.parse(r.related_entry_ids) : [],
+      timestamp: r.timestamp,
+    }));
+  }
+
+  countSessionEvents(sessionId: string): number {
+    const row = this.db.prepare(
+      'SELECT COUNT(*) as count FROM session_events WHERE session_id = ?'
+    ).get(sessionId) as any;
+    return row.count;
+  }
+
+  getRecentSessionsWithEventCounts(projectId: string, limit = 20): Array<{
+    session: any;
+    eventCount: number;
+  }> {
+    const sessions = this.db.prepare(`
+      SELECT * FROM memory_entries
+      WHERE project_id = ? AND type = 'session' AND is_archived = 0
+      ORDER BY created_at DESC LIMIT ?
+    `).all(projectId, limit) as any[];
+
+    return sessions.map((row) => {
+      const session = this.rowToEntry(row);
+      const eventCount = this.countSessionEvents(session.id);
+      return { session, eventCount };
+    });
+  }
+
+  // ==================
+  // Metrics (Feature 3)
+  // ==================
+
+  insertMetric(metricType: string, data: Record<string, any>): void {
+    this.db.prepare(`
+      INSERT INTO metrics (metric_type, data, timestamp)
+      VALUES (?, ?, datetime('now'))
+    `).run(metricType, JSON.stringify(data));
+  }
+
+  getMetrics(options?: {
+    metricType?: string;
+    since?: string;
+    limit?: number;
+  }): Array<{ id: number; timestamp: string; metricType: string; data: Record<string, any> }> {
+    let sql = 'SELECT * FROM metrics WHERE 1=1';
+    const params: any[] = [];
+    if (options?.metricType) {
+      sql += ' AND metric_type = ?';
+      params.push(options.metricType);
+    }
+    if (options?.since) {
+      sql += ' AND timestamp >= ?';
+      params.push(options.since);
+    }
+    sql += ' ORDER BY timestamp DESC';
+    if (options?.limit) {
+      sql += ' LIMIT ?';
+      params.push(options.limit);
+    }
+    const rows = this.db.prepare(sql).all(...params) as any[];
+    return rows.map((r) => ({
+      id: r.id,
+      timestamp: r.timestamp,
+      metricType: r.metric_type,
+      data: JSON.parse(r.data),
+    }));
+  }
+
+  recordRetrievals(entryIds: string[]): void {
+    if (entryIds.length === 0) return;
+    const now = new Date().toISOString();
+    const stmt = this.db.prepare(`
+      UPDATE memory_entries
+      SET last_retrieved_at = ?,
+          retrieve_count = COALESCE(retrieve_count, 0) + 1
+      WHERE id = ?
+    `);
+    const tx = this.db.transaction((ids: string[]) => {
+      for (const id of ids) {
+        stmt.run(now, id);
+      }
+    });
+    tx(entryIds);
+  }
+
+  getMostRetrieved(projectId: string, limit = 10): MemoryEntry[] {
+    const rows = this.db.prepare(`
+      SELECT * FROM memory_entries
+      WHERE project_id = ? AND is_archived = 0 AND status = 'active'
+        AND retrieve_count > 0
+      ORDER BY retrieve_count DESC
+      LIMIT ?
+    `).all(projectId, limit) as any[];
+    return rows.map((r) => this.rowToEntry(r));
+  }
+
+  getStaleEntries(projectId: string, staleThresholdDays = 30): MemoryEntry[] {
+    const cutoff = new Date(Date.now() - staleThresholdDays * 24 * 60 * 60 * 1000).toISOString();
+    const rows = this.db.prepare(`
+      SELECT * FROM memory_entries
+      WHERE project_id = ? AND is_archived = 0 AND status = 'active'
+        AND (last_retrieved_at IS NULL OR last_retrieved_at < ?)
+        AND created_at < ?
+      ORDER BY created_at ASC
+    `).all(projectId, cutoff, cutoff) as any[];
+    return rows.map((r) => this.rowToEntry(r));
+  }
+
+  getEntriesCreatedOrUpdatedSince(projectId: string, since: string): MemoryEntry[] {
+    const rows = this.db.prepare(`
+      SELECT * FROM memory_entries
+      WHERE project_id = ? AND is_archived = 0
+        AND (created_at > ? OR updated_at > ?)
+        AND type != 'session'
+      ORDER BY updated_at DESC
+    `).all(projectId, since, since) as any[];
+    return rows.map((r) => this.rowToEntry(r));
+  }
+
+  getLastSessionEndedAt(projectId: string): string | null {
+    const row = this.db.prepare(`
+      SELECT metadata FROM memory_entries
+      WHERE project_id = ? AND type = 'session' AND is_archived = 0
+        AND json_extract(metadata, '$.endedAt') IS NOT NULL
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `).get(projectId) as any;
+    if (!row) return null;
+    try {
+      const meta = JSON.parse(row.metadata || '{}');
+      return meta.endedAt || null;
+    } catch {
+      return null;
+    }
   }
 
   // ==================

@@ -133,3 +133,32 @@ CREATE TABLE IF NOT EXISTS plan_cache (
   plan_id TEXT NOT NULL,
   fetched_at INTEGER NOT NULL
 );
+
+-- ==================
+-- Session Events (Feature 2 - compaction survival)
+-- ==================
+CREATE TABLE IF NOT EXISTS session_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT NOT NULL,
+  event_type TEXT NOT NULL, -- 'context_loaded', 'decision_made', 'file_edited', 'error_hit', 'task_completed'
+  summary TEXT NOT NULL,
+  related_entry_ids TEXT, -- JSON array
+  timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_session_events_session ON session_events(session_id);
+CREATE INDEX IF NOT EXISTS idx_session_events_type ON session_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_session_events_timestamp ON session_events(timestamp);
+
+-- ==================
+-- Metrics (Feature 3 - usage analytics)
+-- ==================
+CREATE TABLE IF NOT EXISTS metrics (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp TEXT NOT NULL DEFAULT (datetime('now')),
+  metric_type TEXT NOT NULL, -- 'suggest', 'search', 'load', 'session'
+  data TEXT NOT NULL -- JSON
+);
+
+CREATE INDEX IF NOT EXISTS idx_metrics_type ON metrics(metric_type);
+CREATE INDEX IF NOT EXISTS idx_metrics_timestamp ON metrics(timestamp);

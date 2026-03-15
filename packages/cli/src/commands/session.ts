@@ -105,9 +105,54 @@ async function current(): Promise<void> {
   }
 }
 
+interface EventOptions {
+  type: string;
+  summary: string;
+}
+
+async function event(options: EventOptions): Promise<void> {
+  try {
+    const { engine, projectId, db } = await loadProject();
+
+    const activeSession = await engine.getActiveSession(projectId);
+    const sessionId = activeSession?.id || 'no_session';
+
+    db.insertSessionEvent({
+      sessionId,
+      eventType: options.type,
+      summary: options.summary,
+    });
+
+    // Rolling snapshot every 10 events
+    if (activeSession) {
+      const count = db.countSessionEvents(sessionId);
+      if (count % 10 === 0) {
+        // Trigger snapshot update silently
+        const events = db.getSessionEvents(sessionId);
+        const decisions = events.filter((e: any) => e.eventType === 'decision_made').map((e: any) => `- ${e.summary}`);
+        const files = events.filter((e: any) => e.eventType === 'file_edited').map((e: any) => `- ${e.summary}`);
+        const snapshot = [
+          `## Session Resume — ${activeSession.title}`,
+          decisions.length > 0 ? `### Decisions:\n${decisions.slice(0, 10).join('\n')}` : '',
+          files.length > 0 ? `### Files touched:\n${[...new Set(files)].slice(0, 10).join('\n')}` : '',
+        ].filter(Boolean).join('\n');
+        await db.updateEntry(activeSession.id, {
+          metadata: { ...activeSession.metadata, latestSnapshot: snapshot, snapshotAt: new Date().toISOString() },
+        });
+      }
+    }
+
+    await db.close();
+  } catch {
+    // Silent — called from hooks, must never crash
+    process.exit(0);
+  }
+}
+
 export const sessionCommand = {
   start,
   end,
   list,
   current,
+  event,
 };

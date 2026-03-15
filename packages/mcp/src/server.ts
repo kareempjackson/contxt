@@ -34,7 +34,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'suggest_context',
         description:
-          'Smart context retrieval - returns relevant memory entries based on task description and active files. This is the primary tool for getting project context.',
+          'Get relevant context for a task. Pass max_tokens (e.g., 2000) to limit response size. Returns ranked memory entries based on task description and active files.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -49,7 +49,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             maxTokens: {
               type: 'number',
-              description: 'Maximum tokens for context (default: 4000)',
+              description: 'Maximum tokens for context (default: 4000). Pass a value like 2000 to limit response size.',
+            },
+            minRelevance: {
+              type: 'number',
+              description: 'Minimum relevance score 0-1 (default: 0.3)',
             },
             projectPath: {
               type: 'string',
@@ -74,13 +78,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'get_decisions',
-        description: 'Get architectural decisions with optional limit',
+        description: 'Get architectural decisions. Pass max_tokens (e.g., 2000) to limit response size.',
         inputSchema: {
           type: 'object',
           properties: {
             limit: {
               type: 'number',
               description: 'Maximum number of decisions to return',
+            },
+            max_tokens: {
+              type: 'number',
+              description: 'Token budget — only return decisions that fit within this many tokens',
             },
             projectPath: {
               type: 'string',
@@ -91,13 +99,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'get_patterns',
-        description: 'Get code patterns and conventions with optional limit',
+        description: 'Get code patterns and conventions. Pass max_tokens (e.g., 2000) to limit response size.',
         inputSchema: {
           type: 'object',
           properties: {
             limit: {
               type: 'number',
               description: 'Maximum number of patterns to return',
+            },
+            max_tokens: {
+              type: 'number',
+              description: 'Token budget — only return patterns that fit within this many tokens',
             },
             projectPath: {
               type: 'string',
@@ -108,7 +120,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'search_memory',
-        description: 'Search across all memory entries using full-text search',
+        description: 'Search across all memory entries using full-text search. Pass max_tokens to limit response size.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -119,6 +131,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             limit: {
               type: 'number',
               description: 'Maximum number of results',
+            },
+            max_tokens: {
+              type: 'number',
+              description: 'Token budget — only return results that fit within this many tokens',
             },
             projectPath: {
               type: 'string',
@@ -206,6 +222,76 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
           },
           required: ['title', 'content'],
+        },
+      },
+      // ── Session tracking tools (Feature 2) ──
+      {
+        name: 'contxt_session_event',
+        description:
+          'Log a notable event during the current session. Call when: a decision is made (event_type=decision_made), a file is edited (file_edited), an error occurs (error_hit), or a task completes (task_completed). Lightweight — local SQLite only.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            event_type: {
+              type: 'string',
+              enum: ['context_loaded', 'decision_made', 'file_edited', 'error_hit', 'task_completed'],
+              description: 'Type of event',
+            },
+            summary: { type: 'string', description: 'One-line summary of what happened' },
+            related_entry_ids: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'IDs of related memory entries (optional)',
+            },
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+          required: ['event_type', 'summary'],
+        },
+      },
+      {
+        name: 'contxt_session_snapshot',
+        description:
+          'Build a compact snapshot of the current session state (decisions made, files touched, errors). Call before context compaction or on demand. Returns a structured resume under 2KB.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+        },
+      },
+      {
+        name: 'contxt_session_resume',
+        description:
+          'Resume context after compaction. Loads the most recent session snapshot. Call at the start of a continued session or after context compaction. Falls back to fresh suggest if no snapshot exists.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+        },
+      },
+      // ── Stats & diff tools (Features 3 & 4) ──
+      {
+        name: 'contxt_stats',
+        description:
+          'Get usage analytics — token efficiency, session stats, most retrieved entries, and stale entries. Returns JSON.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
+        },
+      },
+      {
+        name: 'contxt_diff',
+        description:
+          'Show what changed in project context since the last session — new entries, updated entries, and stale entries. Returns JSON.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            since: { type: 'string', description: 'ISO8601 timestamp to diff from (default: last session end)' },
+            projectPath: { type: 'string', description: 'Project directory path' },
+          },
         },
       },
       // ── Auto-capture tools (called by AI silently during conversation) ──
@@ -363,6 +449,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           throw new Error('title and content parameters are required');
         }
         result = await tools.savePattern(args);
+        break;
+
+      // Session tracking tools (Feature 2)
+      case 'contxt_session_event':
+        if (!args?.event_type || !args?.summary) {
+          throw new Error('event_type and summary parameters are required');
+        }
+        result = await tools.sessionEvent(args);
+        break;
+
+      case 'contxt_session_snapshot':
+        result = await tools.sessionSnapshot(args || {});
+        break;
+
+      case 'contxt_session_resume':
+        result = await tools.sessionResume(args || {});
+        break;
+
+      // Stats & diff tools (Features 3 & 4)
+      case 'contxt_stats':
+        result = await tools.getStats(args || {});
+        break;
+
+      case 'contxt_diff':
+        result = await tools.getContextDiff(args || {});
         break;
 
       // Auto-capture tools

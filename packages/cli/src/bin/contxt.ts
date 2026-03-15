@@ -29,6 +29,9 @@ import { billingCommand } from '../commands/billing.js';
 import { mcpCommand } from '../commands/mcp.js';
 import { listCommand, deleteCommand } from '../commands/entries.js';
 import { addCommand } from '../commands/add.js';
+import { statsCommand } from '../commands/stats.js';
+import { diffCommand } from '../commands/diff.js';
+import { sessionsCommand } from '../commands/sessions.js';
 
 declare const __CLI_VERSION__: string;
 
@@ -44,6 +47,8 @@ program
   .command('init')
   .description('Initialize a Contxt project in the current directory')
   .option('-n, --name <name>', 'Project name')
+  .option('--platforms <platforms>', 'Comma-separated platforms to configure (claude-code,cursor,gemini,vscode-copilot,opencode,codex)')
+  .option('--check', 'Show platform configuration status')
   .action(initCommand);
 
 program
@@ -201,6 +206,13 @@ session
   .command('current')
   .description('Show current active session')
   .action(sessionCommand.current);
+
+session
+  .command('event')
+  .description('Log a session event (called by hooks and agents)')
+  .requiredOption('--type <type>', 'Event type: decision_made, file_edited, error_hit, task_completed, context_loaded')
+  .requiredOption('--summary <summary>', 'One-line summary of the event')
+  .action(sessionCommand.event);
 
 // Search command
 program
@@ -459,6 +471,44 @@ program
   .command('mcp')
   .description('Start the MCP server (used by Cursor, Claude Code, Windsurf, Antigravity)')
   .action(mcpCommand);
+
+// Stats command (Feature 3)
+program
+  .command('stats')
+  .description('Show usage analytics — token efficiency, sessions, most retrieved, stale entries')
+  .option('-d, --days <days>', 'Number of days to analyze (default: 30)', parseInt)
+  .option('--export <format>', 'Export format: json')
+  .action(statsCommand);
+
+// Diff command (Feature 4)
+program
+  .command('diff')
+  .description('Show context changes since your last session')
+  .option('--since <timestamp>', 'ISO8601 timestamp to diff from')
+  .option('-d, --days <days>', 'Days back to diff from (alternative to --since)', parseInt)
+  .option('--json', 'Output as JSON')
+  .action(diffCommand);
+
+// Sessions command (Feature 2d)
+const sessionsCmd = program
+  .command('sessions')
+  .description('View session history and resume after compaction')
+  .action(sessionsCommand.list);
+
+sessionsCmd
+  .command('list')
+  .description('List recent sessions with event counts')
+  .action(sessionsCommand.list);
+
+sessionsCmd
+  .command('show <session-id>')
+  .description('Show events for a specific session')
+  .action(sessionsCommand.show);
+
+sessionsCmd
+  .command('resume')
+  .description('Print the resume snapshot for the last session')
+  .action(sessionsCommand.resume);
 
 // Parse arguments
 program.parse();
