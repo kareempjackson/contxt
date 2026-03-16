@@ -1,5 +1,5 @@
 /**
- * Core type definitions for MemoCore
+ * Core type definitions for Contxt
  */
 
 /**

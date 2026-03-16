@@ -126,6 +126,9 @@ export async function loadCommand(options: LoadOptions) {
       let resolvedEntries = entries;
       if (mode === 'task' && options.task) {
         const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+          console.error(chalk.dim('ℹ Keyword-based filtering active. Set OPENAI_API_KEY for semantic task matching.'));
+        }
         if (apiKey) {
           try {
             const config = getSupabaseConfig();

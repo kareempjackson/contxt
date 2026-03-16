@@ -1,5 +1,5 @@
 /**
- * MemoCore Adapters - Main exports
+ * Contxt Adapters - Main exports
  */
 
 // SQLite adapter (local storage)

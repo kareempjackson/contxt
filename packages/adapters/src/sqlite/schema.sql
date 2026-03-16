@@ -1,4 +1,4 @@
--- MemoCore SQLite Schema
+-- Contxt SQLite Schema
 -- Local source of truth for offline-first architecture
 
 -- Enable foreign keys

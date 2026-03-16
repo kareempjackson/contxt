@@ -23,7 +23,7 @@ Thumbs.db
 # Testing
 coverage/
 
-# Local memocore data
+# Local Contxt data
 .memocore/
 
 .requirements/

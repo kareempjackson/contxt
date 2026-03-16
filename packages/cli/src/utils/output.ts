@@ -52,7 +52,7 @@ export function formatEntry(entry: MemoryEntry): string {
   // Content
   if (entry.content?.trim()) {
     lines.push(entry.content);
-  } else {
+  } else if (entry.type === 'decision') {
     lines.push(chalk.dim('No rationale provided.'));
   }
 

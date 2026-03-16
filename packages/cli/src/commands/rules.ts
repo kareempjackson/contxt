@@ -220,9 +220,21 @@ export async function generateCommand(options: RulesOptions = {}) {
       branch,
     });
 
-    // Group entries by type
-    const decisions = allEntries.filter((e) => e.type === 'decision' && e.status === 'active');
-    const patterns = allEntries.filter((e) => e.type === 'pattern' && e.status === 'active');
+    // Group entries by type, deduplicating by title to prevent duplicate lines in rules.md
+    const seenDecisionTitles = new Set<string>();
+    const decisions = allEntries.filter((e) => {
+      if (e.type !== 'decision' || e.status !== 'active') return false;
+      if (seenDecisionTitles.has(e.title)) return false;
+      seenDecisionTitles.add(e.title);
+      return true;
+    });
+    const seenPatternTitles = new Set<string>();
+    const patterns = allEntries.filter((e) => {
+      if (e.type !== 'pattern' || e.status !== 'active') return false;
+      if (seenPatternTitles.has(e.title)) return false;
+      seenPatternTitles.add(e.title);
+      return true;
+    });
     const context = allEntries.filter((e) => e.type === 'context' && e.status === 'active');
     const documents = allEntries.filter((e) => e.type === 'document' && e.status === 'active');
 

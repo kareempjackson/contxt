@@ -2,13 +2,15 @@
  * Export/Import commands
  */
 
-import { writeFileSync, readFileSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
+import inquirer from 'inquirer';
 import { loadProject } from '../utils/project.js';
 import { success, error, info } from '../utils/output.js';
 
 interface ExportOptions {
   output?: string;
   branch?: string;
+  force?: boolean;
 }
 
 interface ImportOptions {
@@ -47,6 +49,19 @@ export async function exportCommand(options: ExportOptions): Promise<void> {
     const json = JSON.stringify(exportData, null, 2);
 
     if (options.output) {
+      if (existsSync(options.output) && !options.force) {
+        const { confirmed } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'confirmed',
+          message: `${options.output} already exists. Overwrite?`,
+          default: false,
+        }]);
+        if (!confirmed) {
+          info('Export cancelled.');
+          await db.close();
+          return;
+        }
+      }
       writeFileSync(options.output, json, 'utf-8');
       success(`Exported ${entries.length} entries to ${options.output}`);
     } else {

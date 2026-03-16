@@ -136,6 +136,7 @@ const context = program
 context
   .command('set')
   .description('Set current working context')
+  .argument('[feature]', 'Current feature being worked on (shorthand for --feature)')
   .option('-f, --feature <feature>', 'Current feature being worked on')
   .option('-b, --blockers <blockers...>', 'Current blockers')
   .option('-n, --next <steps...>', 'Next steps')
@@ -229,6 +230,7 @@ program
   .description('Export memory entries to JSON')
   .option('-o, --output <file>', 'Output file (defaults to stdout)')
   .option('-b, --branch <branch>', 'Export specific branch')
+  .option('--force', 'Overwrite existing file without prompting')
   .action(exportCommand);
 
 // Import command

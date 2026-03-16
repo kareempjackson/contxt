@@ -264,7 +264,7 @@ export function scanCommentToEntry(comment: ScanComment, projectId: string): {
     return {
       type: 'decision',
       title: comment.title,
-      content: comment.fields.rationale || comment.content,
+      content: comment.fields.rationale || (comment.content !== comment.title ? comment.content : ''),
       metadata: {
         ...metadata,
         alternatives: comment.fields.alternatives,
@@ -279,7 +279,7 @@ export function scanCommentToEntry(comment: ScanComment, projectId: string): {
     return {
       type: 'pattern',
       title: comment.title,
-      content: comment.fields.template || comment.content,
+      content: comment.fields.template || (comment.content !== comment.title ? comment.content : ''),
       metadata: {
         ...metadata,
         when: comment.fields.when,

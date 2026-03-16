@@ -1,4 +1,4 @@
--- MemoCore Initial Schema
+-- Contxt Initial Schema
 -- Core tables for projects and memory entries
 
 -- Enable pgvector extension (required for vector column in memory_entries)

@@ -1,4 +1,4 @@
--- MemoCore Row-Level Security Policies
+-- Contxt Row-Level Security Policies
 -- Ensure users can only access their own data
 
 -- Enable RLS on all tables

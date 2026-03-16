@@ -1,4 +1,4 @@
--- MemoCore Auth Schema
+-- Contxt Auth Schema
 -- User profiles and tier management
 
 -- User profiles table

@@ -1,5 +1,5 @@
 /**
- * MemoCore - Core package exports
+ * Contxt - Core package exports
  */
 
 // Types

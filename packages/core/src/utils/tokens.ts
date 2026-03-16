@@ -65,7 +65,7 @@ export function fitToBudget(
   let currentTokens = 0;
 
   // Reserve tokens for header/footer
-  const headerTokens = countTokens('# MemoCore Context\n\n');
+  const headerTokens = countTokens('# Contxt\n\n');
   currentTokens += headerTokens;
 
   for (const ranked of rankedEntries) {
@@ -95,7 +95,7 @@ export function buildContext(
 ): string {
   const lines: string[] = [];
 
-  lines.push('# MemoCore Context');
+  lines.push('# Contxt');
   lines.push('');
 
   if (options?.includeStats) {

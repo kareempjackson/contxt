@@ -1,6 +1,6 @@
 /**
  * Suggest Context Tool - Smart context retrieval
- * This is the killer feature of MemoCore
+ * This is the killer feature of Contxt
  */
 
 import { SQLiteDatabase } from '@mycontxt/adapters/sqlite';
@@ -27,7 +27,7 @@ export async function suggestContext(args: SuggestContextArgs): Promise<string> 
     // Get project
     const project = await db.getProjectByPath(projectPath);
     if (!project) {
-      return 'No MemoCore project found. Run `memocore init` to initialize.';
+      return 'No Contxt project found. Run `contxt init` to initialize.';
     }
 
     // Get active branch

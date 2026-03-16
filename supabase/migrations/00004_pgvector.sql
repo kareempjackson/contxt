@@ -1,4 +1,4 @@
--- MemoCore Semantic Search with pgvector
+-- Contxt Semantic Search with pgvector
 -- Enables vector embeddings and semantic similarity search
 
 -- Enable pgvector extension

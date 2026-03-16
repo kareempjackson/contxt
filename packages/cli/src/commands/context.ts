@@ -13,12 +13,12 @@ interface SetOptions {
   files?: string[];
 }
 
-async function set(options: SetOptions): Promise<void> {
+async function set(featureArg: string | undefined, options: SetOptions): Promise<void> {
   try {
     const { engine, projectId, db } = await loadProject();
 
     const input: ContextInput = {
-      feature: options.feature,
+      feature: featureArg || options.feature,
       blockers: options.blockers,
       nextSteps: options.next,
       activeFiles: options.files,

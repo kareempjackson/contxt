@@ -57,6 +57,8 @@ export function buildContextPayload(
       taskDescription: options.taskDescription,
       activeFiles: options.activeFiles,
       maxTokens: budget,
+      // Require keyword contribution in task mode so entries with no relevance are excluded
+      minRelevance: options.minRelevance ?? 0.5,
     };
 
     rankedEntries = rankEntries(entries, suggestOpts);

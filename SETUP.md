@@ -1,6 +1,6 @@
-# MemoCore Setup Guide
+# Contxt Setup Guide
 
-Complete setup instructions for getting MemoCore production-ready.
+Complete setup instructions for getting Contxt production-ready.
 
 ## 📋 Prerequisites
 
@@ -40,7 +40,7 @@ Complete setup instructions for getting MemoCore production-ready.
 
 ### For Local Development (No Cloud)
 
-**None required!** MemoCore works offline with SQLite.
+**None required!** Contxt works offline with SQLite.
 
 ### For Cloud Sync (Supabase)
 
@@ -48,8 +48,8 @@ Create a `.env` file in project root:
 
 ```bash
 # Supabase Configuration (required for cloud sync)
-MEMOCORE_SUPABASE_URL=https://your-project.supabase.co
-MEMOCORE_SUPABASE_ANON_KEY=your-anon-key-here
+CONTXT_SUPABASE_URL=https://your-project.supabase.co
+CONTXT_SUPABASE_ANON_KEY=your-anon-key-here
 
 # OpenAI Configuration (required for semantic search embeddings)
 OPENAI_API_KEY=sk-...your-openai-api-key
@@ -66,8 +66,8 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 2. Create new project (or use existing)
 3. Go to Project Settings → API
 4. Copy:
-   - **Project URL** → `MEMOCORE_SUPABASE_URL`
-   - **anon/public key** → `MEMOCORE_SUPABASE_ANON_KEY`
+   - **Project URL** → `CONTXT_SUPABASE_URL`
+   - **anon/public key** → `CONTXT_SUPABASE_ANON_KEY`
    - **service_role key** → `SUPABASE_SERVICE_ROLE_KEY`
 
 #### OpenAI API Key
@@ -84,7 +84,7 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ### Step 1: Build Packages
 
 ```bash
-cd /Users/kareempjackson/Desktop/GhostSavvyStudios/ProductStudio/memocore
+cd /Users/kareempjackson/Desktop/GhostSavvyStudios/ProductStudio/contxt
 pnpm build
 ```
 
@@ -92,20 +92,20 @@ pnpm build
 
 ```bash
 # Create test project
-mkdir test-memocore
-cd test-memocore
+mkdir test-contxt
+cd test-contxt
 
 # Initialize
-node ../packages/cli/dist/memocore.js init --name "Test Project"
+contxt init --name "Test Project"
 
 # Add some test data
-node ../packages/cli/dist/memocore.js decision add \
+contxt decision add \
   --title "Test Decision" \
-  --rationale "Testing MemoCore"
+  --rationale "Testing Contxt"
 
 # Verify
-node ../packages/cli/dist/memocore.js status
-node ../packages/cli/dist/memocore.js decision list
+contxt status
+contxt decision list
 
 # Test MCP server
 echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | \
@@ -117,7 +117,7 @@ echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | \
 #### 3.1 Initialize Supabase Project
 
 ```bash
-cd /Users/kareempjackson/Desktop/GhostSavvyStudios/ProductStudio/memocore
+cd /Users/kareempjackson/Desktop/GhostSavvyStudios/ProductStudio/contxt
 supabase init
 ```
 
@@ -176,8 +176,8 @@ Create `.env` file with values from Supabase:
 ```bash
 # In project root
 cat > .env << EOF
-MEMOCORE_SUPABASE_URL=https://your-project.supabase.co
-MEMOCORE_SUPABASE_ANON_KEY=your-anon-key
+CONTXT_SUPABASE_URL=https://your-project.supabase.co
+CONTXT_SUPABASE_ANON_KEY=your-anon-key
 OPENAI_API_KEY=sk-your-openai-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 EOF
@@ -190,25 +190,25 @@ EOF
 export $(cat .env | xargs)
 
 # Test authentication
-cd test-memocore
-node ../packages/cli/dist/memocore.js auth login
+cd test-contxt
+contxt auth login
 
 # Test push
-node ../packages/cli/dist/memocore.js push
+contxt push
 
 # Test pull (from another directory)
-mkdir test-memocore-2
-cd test-memocore-2
-node ../packages/cli/dist/memocore.js init --name "Test Project"
-node ../packages/cli/dist/memocore.js pull
-node ../packages/cli/dist/memocore.js decision list
+mkdir test-contxt-2
+cd test-contxt-2
+contxt init --name "Test Project"
+contxt pull
+contxt decision list
 # Should show the decision from first project
 ```
 
 ### Step 6: Publish to npm (Optional)
 
 ```bash
-cd /Users/kareempjackson/Desktop/GhostSavvyStudios/ProductStudio/memocore
+cd /Users/kareempjackson/Desktop/GhostSavvyStudios/ProductStudio/contxt
 
 # Login to npm
 npm login
@@ -227,16 +227,16 @@ cd ../cli && npm publish --access public
 cd ../mcp && npm publish --access public
 ```
 
-**Note:** Update package names in package.json files to include your npm scope:
-- `@yourusername/memocore-core`
-- `@yourusername/memocore-adapters`
-- `@yourusername/memocore-cli`
-- `@yourusername/memocore-mcp`
+**Note:** Package names are already scoped correctly:
+- `@mycontxt/core`
+- `@mycontxt/adapters`
+- `@mycontxt/cli`
+- `@mycontxt/mcp`
 
 ### Step 7: Install Globally (After Publishing)
 
 ```bash
-npm install -g @yourusername/memocore-cli
+npm install -g @mycontxt/cli
 
 # Or link locally for development
 cd packages/cli
@@ -247,26 +247,29 @@ npm link
 
 ### Local Features (No Cloud Required)
 
-- [ ] `memocore init` creates project
-- [ ] `memocore decision add/list/show` works
-- [ ] `memocore pattern add/list` works
-- [ ] `memocore context set/show` works
-- [ ] `memocore doc add/list` works
-- [ ] `memocore session start/end` works
-- [ ] `memocore search` returns results
-- [ ] `memocore export/import` works
-- [ ] `memocore branch create/list/switch/merge` works
-- [ ] `memocore history show/restore` works
-- [ ] `memocore load --task/--files/--all` works
-- [ ] MCP server lists 8 tools correctly
+- [ ] `contxt init` creates project
+- [ ] `contxt decision add/list/show` works
+- [ ] `contxt pattern add/list` works
+- [ ] `contxt context set/show` works
+- [ ] `contxt doc add/list` works
+- [ ] `contxt session start/end` works
+- [ ] `contxt search` returns results
+- [ ] `contxt export/import` works
+- [ ] `contxt branch create/list/switch/merge` works
+- [ ] `contxt history show/restore` works
+- [ ] `contxt load --task/--files/--all` works
+- [ ] `contxt stats` shows token analytics
+- [ ] `contxt diff` shows context changes
+- [ ] `contxt sessions` lists recent sessions
+- [ ] MCP server lists tools correctly
 
 ### Cloud Features (Requires Supabase)
 
-- [ ] `memocore auth login` opens browser
-- [ ] `memocore auth status` shows authenticated user
-- [ ] `memocore push` syncs to cloud
-- [ ] `memocore pull` fetches from cloud
-- [ ] `memocore sync` works bidirectionally
+- [ ] `contxt auth login` opens browser
+- [ ] `contxt auth status` shows authenticated user
+- [ ] `contxt push` syncs to cloud
+- [ ] `contxt pull` fetches from cloud
+- [ ] `contxt sync` works bidirectionally
 - [ ] Conflict detection with `--force` flag works
 - [ ] Semantic search finds relevant entries
 - [ ] Multiple machines can sync same project
@@ -288,13 +291,13 @@ export OPENAI_API_KEY=sk-your-key
 
 **Solution:** Set environment variables:
 ```bash
-export MEMOCORE_SUPABASE_URL=https://your-project.supabase.co
-export MEMOCORE_SUPABASE_ANON_KEY=your-anon-key
+export CONTXT_SUPABASE_URL=https://your-project.supabase.co
+export CONTXT_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 ### Issue: "Not authenticated"
 
-**Solution:** Run `memocore auth login` first
+**Solution:** Run `contxt auth login` first
 
 ### Issue: pgvector functions not found
 
@@ -347,7 +350,7 @@ export MEMOCORE_SUPABASE_ANON_KEY=your-anon-key
 
 1. **Create GitHub Repository**
    ```bash
-   git remote add origin https://github.com/yourusername/memocore.git
+   git remote add origin https://github.com/yourusername/contxt.git
    git push -u origin main
    ```
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * MemoCore MCP Server
- * Exposes MemoCore functionality to AI agents via Model Context Protocol
+ * Contxt MCP Server
+ * Exposes Contxt functionality to AI agents via Model Context Protocol
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';

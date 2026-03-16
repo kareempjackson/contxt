@@ -36,6 +36,12 @@ interface DeleteOptions {
 
 export async function listCommand(options: ListOptions = {}): Promise<void> {
   try {
+    const VALID_TYPES = ['decision', 'pattern', 'context', 'document', 'session'];
+    if (options.type && !VALID_TYPES.includes(options.type)) {
+      error(`Invalid type "${options.type}". Valid types: ${VALID_TYPES.join(', ')}`);
+      process.exit(1);
+    }
+
     const { db, projectId } = await loadProject();
 
     const branch = options.branch || (await db.getActiveBranch(projectId));
