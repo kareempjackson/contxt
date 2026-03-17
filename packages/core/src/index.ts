@@ -14,6 +14,7 @@ export * from './engine/relevance.js';
 export * from './engine/sync.js';
 export * from './engine/context-builder.js';
 export * from './engine/markdown-inferrer.js';
+export * from './engine/bootstrapper.js';
 export * from './engine/classifier.js';
 
 // Utils

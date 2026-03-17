@@ -32,6 +32,7 @@ import { addCommand } from '../commands/add.js';
 import { statsCommand } from '../commands/stats.js';
 import { diffCommand } from '../commands/diff.js';
 import { sessionsCommand } from '../commands/sessions.js';
+import { bootstrapCommand } from '../commands/bootstrap.js';
 
 declare const __CLI_VERSION__: string;
 
@@ -50,6 +51,13 @@ program
   .option('--platforms <platforms>', 'Comma-separated platforms to configure (claude-code,cursor,gemini,vscode-copilot,opencode,codex)')
   .option('--check', 'Show platform configuration status')
   .action(initCommand);
+
+program
+  .command('bootstrap')
+  .description('Analyze existing codebase and generate initial context memory')
+  .option('--force', 'Remove and regenerate existing bootstrap entries')
+  .option('--dry-run', 'Preview entries without saving')
+  .action(bootstrapCommand);
 
 program
   .command('status')
